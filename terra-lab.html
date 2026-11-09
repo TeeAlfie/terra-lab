@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Terra Lab: Plate Tectonics</title>
+<style>
+:root{
+  --bg:#0b1726; --panel:#12243a; --panel2:#183150; --line:#2a4a6e;
+  --ink:#e8f1fb; --dim:#9fb6cf; --amber:#ffb703; --teal:#2ec4b6; --red:#ef476f;
+  --green:#06d6a0; --blue:#4cc9f0; --purple:#b388ff;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;}
+body{min-height:100vh;background:radial-gradient(1200px 600px at 80% -10%,#1d3b63 0%,transparent 60%),radial-gradient(900px 500px at -10% 110%,#3a1d4f 0%,transparent 60%),var(--bg);}
+button{font-family:inherit;cursor:pointer}
+header{position:sticky;top:0;z-index:20;background:rgba(11,23,38,.92);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);}
+.topbar{display:flex;align-items:center;gap:14px;padding:10px 16px;flex-wrap:wrap;max-width:1200px;margin:0 auto}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;letter-spacing:.5px}
+.logo .globe{width:34px;height:34px;border-radius:50%;background:conic-gradient(#ef476f 0 25%,#ffb703 0 50%,#2ec4b6 0 75%,#4cc9f0 0);animation:spin 8s linear infinite;box-shadow:0 0 14px #4cc9f088}
+@keyframes spin{to{transform:rotate(360deg)}}
+.logo small{display:block;font-size:11px;color:var(--dim);font-weight:600;letter-spacing:1px}
+.rank{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:13px}
+.xpbar{width:160px;height:10px;background:#0a1320;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.xpbar i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--amber));width:0;transition:width .6s}
+.hbtn{background:var(--panel2);border:1px solid var(--line);color:var(--ink);padding:7px 12px;border-radius:10px;font-size:13px;font-weight:700}
+.hbtn:hover{border-color:var(--amber)}
+nav.tabs{display:flex;gap:6px;padding:0 16px 10px;max-width:1200px;margin:0 auto;overflow-x:auto}
+.tab{flex:1;min-width:150px;background:var(--panel);border:2px solid var(--line);color:var(--ink);padding:10px 12px;border-radius:12px;text-align:left;transition:.2s}
+.tab b{font-size:18px;color:var(--amber);margin-right:6px}
+.tab span{font-size:13px;font-weight:700}
+.tab .pbar{height:4px;background:#0a1320;border-radius:3px;margin-top:6px;overflow:hidden}
+.tab .pbar i{display:block;height:100%;background:var(--green);width:0;transition:width .5s}
+.tab:hover{transform:translateY(-2px)}
+.tab.on{border-color:var(--amber);background:linear-gradient(180deg,#22406a,#152c48);box-shadow:0 4px 18px #ffb70333}
+main{max-width:1200px;margin:0 auto;padding:16px}
+.brief{display:flex;gap:16px;align-items:flex-start;background:linear-gradient(135deg,#1a3354,#122540);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:16px}
+.brief .avatar{font-size:44px;line-height:1}
+.brief h2{margin:0 0 4px;font-size:22px}
+.brief p{margin:4px 0;color:var(--dim);line-height:1.45}
+.brief .log{font-family:"Courier New",monospace;color:var(--teal);font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.card{position:relative;background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:16px;cursor:pointer;transition:.18s;min-height:140px}
+.card:hover{transform:translateY(-3px);border-color:var(--teal);box-shadow:0 8px 24px #0006}
+.card .ic{font-size:34px}
+.card h3{margin:6px 0 4px;font-size:16px}
+.card p{margin:0;color:var(--dim);font-size:13px;line-height:1.4}
+.card .st{position:absolute;top:12px;right:12px;font-size:11px;font-weight:800;padding:3px 8px;border-radius:20px;background:#0a1320;color:var(--dim);border:1px solid var(--line)}
+.card.done{border-color:var(--green)}
+.card.done .st{background:var(--green);color:#05261d;border-color:var(--green)}
+.card.exam{background:linear-gradient(135deg,#3b2a0a,#1d1a12);border-color:#7a5a12}
+.card.game{background:linear-gradient(135deg,#2b1745,#171a33);border-color:#5a3f8a}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}
+.stagehead{display:flex;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+.stagehead h2{margin:0;font-size:20px}
+.back{background:#0a1320;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:7px 12px;font-weight:700}
+.back:hover{border-color:var(--amber)}
+.goal{background:#0a1320;border-left:4px solid var(--amber);padding:10px 12px;border-radius:8px;color:var(--dim);font-size:14px;line-height:1.45;margin-bottom:12px}
+.goal b{color:var(--amber)}
+.row{display:flex;gap:16px;flex-wrap:wrap}
+.col{flex:1;min-width:280px}
+canvas,svg.sim{width:100%;height:auto;display:block;background:#07101b;border-radius:12px;border:1px solid var(--line);touch-action:none}
+.ctrls{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;align-items:center}
+.btn{background:var(--panel2);border:2px solid var(--line);color:var(--ink);padding:8px 14px;border-radius:10px;font-weight:700;font-size:14px;transition:.15s}
+.btn:hover{border-color:var(--teal)}
+.btn.on{border-color:var(--amber);background:#3a2e0b;color:var(--amber)}
+.btn.go{background:var(--teal);color:#062421;border-color:var(--teal)}
+.btn.go:hover{filter:brightness(1.1)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.readout{background:#06101a;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:14px;line-height:1.5;min-height:110px}
+.readout h4{margin:0 0 6px;color:var(--amber);font-size:16px}
+.readout .mono{font-family:"Courier New",monospace;color:var(--teal);font-size:12px}
+.chip{display:inline-block;background:var(--panel2);border:2px solid var(--line);color:var(--ink);padding:7px 11px;border-radius:20px;margin:3px;font-weight:700;font-size:13px;cursor:pointer;user-select:none}
+.chip.sel{border-color:var(--amber);background:#3a2e0b;color:var(--amber);transform:scale(1.05)}
+.chip.ok{border-color:var(--green);background:#0b3b2e;color:var(--green);cursor:default}
+.chip.bad{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.check{margin-top:12px;background:#0d1d30;border:1px dashed var(--teal);border-radius:12px;padding:12px}
+.check h4{margin:0 0 8px;color:var(--teal)}
+.q{margin:10px 0}
+.q .qt{font-weight:700;margin-bottom:6px}
+.opt{display:block;width:100%;text-align:left;background:#0a1626;border:2px solid var(--line);color:var(--ink);padding:9px 12px;border-radius:10px;margin:5px 0;font-size:14px}
+.opt:hover{border-color:var(--blue)}
+.opt.right{border-color:var(--green);background:#0b3b2e}
+.opt.wrong{border-color:var(--red);background:#3b0f1c}
+.explain{font-size:13px;color:var(--dim);margin-top:4px;padding:8px 10px;background:#0a1320;border-radius:8px}
+.toastbox{position:fixed;right:16px;bottom:16px;z-index:99;display:flex;flex-direction:column;gap:8px}
+.toast{background:#13263b;border:2px solid var(--amber);padding:10px 14px;border-radius:12px;box-shadow:0 6px 20px #000a;font-weight:700;animation:pop .35s;max-width:320px}
+@keyframes pop{from{transform:translateY(20px);opacity:0}}
+.big{font-size:28px;font-weight:800}
+.pill{display:inline-block;padding:2px 9px;border-radius:12px;font-size:12px;font-weight:800;background:#0a1320;border:1px solid var(--line)}
+.bins{display:flex;gap:10px;flex-wrap:wrap}
+.bin{flex:1;min-width:200px;min-height:120px;border:2px dashed var(--line);border-radius:12px;padding:10px;background:#091523;cursor:pointer}
+.bin:hover{border-color:var(--amber)}
+.bin h4{margin:0 0 6px}
+.matchgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.mcard{min-height:90px;border-radius:12px;border:2px solid var(--line);background:var(--panel2);padding:10px;font-size:13px;display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;transition:.15s;font-weight:700}
+.mcard.term{background:#20365a;font-size:15px;color:var(--amber)}
+.mcard.sel{border-color:var(--amber);transform:scale(1.04)}
+.mcard.gone{visibility:hidden}
+.mcard.bad{animation:shake .4s;border-color:var(--red)}
+.journal .entry{background:#0a1626;border:1px solid var(--line);border-radius:10px;padding:10px;margin:6px 0}
+.journal .entry b{color:var(--amber)}
+.locked{opacity:.4}
+.legend{font-size:12px;color:var(--dim);margin-top:6px}
+.slider{width:100%;accent-color:var(--amber)}
+.hint{font-size:12px;color:var(--dim)}
+.timer{font-size:22px;font-weight:800;color:var(--amber)}
+.flash-g{animation:fg .5s}@keyframes fg{0%{box-shadow:0 0 0 0 #06d6a0}100%{box-shadow:0 0 0 18px #06d6a000}}
+@media (max-width:640px){.tab{min-width:120px}.logo{font-size:16px}.xpbar{width:90px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="topbar">
+    <div class="logo"><div class="globe"></div><div>TERRA LAB<small>PLATE TECTONICS DISCOVERY SIMULATOR</small></div></div>
+    <div class="rank"><span id="rankName">Lab Intern</span><div class="xpbar"><i id="xpFill"></i></div><span id="xpTxt">0 XP</span></div>
+    <button class="hbtn" id="btnJournal">📓 Field Journal</button>
+    <button class="hbtn" id="btnExam">🏆 Unit Test</button>
+  </div>
+  <nav class="tabs" id="tabs"></nav>
+</header>
+<main id="main"></main>
+<div class="toastbox" id="toasts"></div>
+<script>
+/* ================= CORE ENGINE ================= */
+const $ = (s, r = document) => r.querySelector(s);
+const el = (tag, attrs = {}, html = '') => { const e = document.createElement(tag); for (const k in attrs) { if (k === 'class') e.className = attrs[k]; else if (k.startsWith('on')) e[k] = attrs[k]; else e.setAttribute(k, attrs[k]); } if (html) e.innerHTML = html; return e; };
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const ease = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+
+const KEY = 'terraLab_v1';
+let S = { xp: 0, done: {}, best: {}, found: {} };
+try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(S, JSON.parse(raw)); } catch (e) {}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+const RANKS = [[0, 'Lab Intern 🧪'], [150, 'Field Assistant 🎒'], [400, 'Junior Geologist 🪨'], [800, 'Seismologist 📈'], [1300, 'Senior Scientist 🔬'], [2000, 'Plate Tectonics Legend 🌋']];
+function rankInfo() { let i = 0; while (i + 1 < RANKS.length && S.xp >= RANKS[i + 1][0]) i++; const lo = RANKS[i][0], hi = RANKS[i + 1] ? RANKS[i + 1][0] : lo + 1000; return { name: RANKS[i][1], pct: clamp((S.xp - lo) / (hi - lo), 0, 1), idx: i }; }
+function drawHUD() { const r = rankInfo(); $('#rankName').textContent = r.name; $('#xpFill').style.width = (r.pct * 100) + '%'; $('#xpTxt').textContent = S.xp + ' XP'; drawTabs(); }
+function addXP(n, why) { const before = rankInfo().idx; S.xp += n; save(); if (why) toast(`+${n} XP · ${why}`); const after = rankInfo().idx; if (after > before) setTimeout(() => toast(`🎖️ PROMOTED! You are now: ${rankInfo().name}`, 4500), 600); drawHUD(); }
+function toast(msg, ms = 2600) { const t = el('div', { class: 'toast' }, msg); $('#toasts').appendChild(t); setTimeout(() => t.remove(), ms); }
+function complete(id, xp, name) { if (S.done[id]) { toast('✅ Mission replayed — nice practice!'); return; } S.done[id] = true; save(); addXP(xp, 'Mission complete: ' + name); }
+function discover(term) { if (!S.found[term]) { S.found[term] = true; save(); toast('📓 New journal entry: ' + term); } }
+
+/* --- animation & canvas helpers --- */
+let cleanups = [];
+function onLeave(fn) { cleanups.push(fn); }
+function runCleanups() { cleanups.forEach(f => { try { f(); } catch (e) {} }); cleanups = []; }
+function loop(fn) { let on = true, last = performance.now(); const f = now => { if (!on) return; const dt = Math.min(0.05, (now - last) / 1000); last = now; fn(dt, now / 1000); requestAnimationFrame(f); }; requestAnimationFrame(f); const stop = () => on = false; onLeave(stop); return stop; }
+function mkCanvas(parent, w, h) { const cv = el('canvas'); cv.width = w; cv.height = h; parent.appendChild(cv); const ctx = cv.getContext('2d'); const pos = e => { const r = cv.getBoundingClientRect(); const p = e.touches ? e.touches[0] : e; return { x: (p.clientX - r.left) * w / r.width, y: (p.clientY - r.top) * h / r.height }; }; return { cv, ctx, pos, w, h }; }
+function txt(ctx, s, x, y, o = {}) { ctx.save(); ctx.font = `${o.b === false ? '' : 'bold '}${o.size || 14}px Trebuchet MS, sans-serif`; ctx.textAlign = o.align || 'center'; ctx.textBaseline = o.base || 'middle'; if (o.stroke) { ctx.lineWidth = 4; ctx.lineJoin = 'round'; ctx.strokeStyle = o.stroke; ctx.strokeText(s, x, y); } ctx.fillStyle = o.c || '#fff'; ctx.fillText(s, x, y); ctx.restore(); }
+function poly(ctx, pts, fill, stroke, lw = 2) { ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.closePath(); if (fill) { ctx.fillStyle = fill; ctx.fill(); } if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.stroke(); } }
+
+/* --- Discovery checkpoint: questions inside a mission --- */
+function checkpoint(parent, title, qs, onDone) {
+  const box = el('div', { class: 'check' }, `<h4>🔎 ${title}</h4>`); parent.appendChild(box);
+  let solved = 0;
+  qs.forEach(q => {
+    const d = el('div', { class: 'q' }, `<div class="qt">${q.q}</div>`); box.appendChild(d);
+    let done = false;
+    const order = shuffle(q.a.map((t, i) => ({ t, i })));
+    order.forEach(o => {
+      const b = el('button', { class: 'opt' }, o.t); d.appendChild(b);
+      b.onclick = () => {
+        if (done) return;
+        if (o.i === q.c) { b.classList.add('right'); done = true; solved++; if (q.e) d.appendChild(el('div', { class: 'explain' }, '✔ ' + q.e)); if (q.term) discover(q.term); if (solved === qs.length && onDone) onDone(); }
+        else { b.classList.add('wrong'); b.classList.add('bad'); toast('🤔 Not quite — look at the simulation again!'); }
+      };
+    });
+  });
+  return box;
+}
+function lockedCheck(parent, title, msg) { const box = el('div', { class: 'check locked' }, `<h4>🔒 ${title}</h4><div class="hint">${msg}</div>`); parent.appendChild(box); return box; }
+
+/* ================= SECTIONS & NAV ================= */
+const SECTIONS = {}; // filled by section files
+const ORDER = ['7.1', '7.2', '7.3', '7.4'];
+let current = '7.1';
+
+function sectionProgress(id) { const s = SECTIONS[id]; const ids = s.missions.map(m => m.id).concat(['exam_' + id]); const n = ids.filter(i => S.done[i]).length; return n / ids.length; }
+function drawTabs() {
+  const nav = $('#tabs'); nav.innerHTML = '';
+  ORDER.forEach(id => { const s = SECTIONS[id]; if (!s) return; const b = el('button', { class: 'tab' + (id === current ? ' on' : '') }, `<b>${id}</b><span>${s.title}</span><div class="pbar"><i style="width:${sectionProgress(id) * 100}%"></i></div>`); b.onclick = () => { current = id; showSection(id); }; nav.appendChild(b); });
+}
+function showSection(id) {
+  runCleanups(); drawTabs();
+  const s = SECTIONS[id]; const m = $('#main'); m.innerHTML = '';
+  m.appendChild(el('div', { class: 'brief' }, `<div class="avatar">${s.avatar}</div><div><h2>${s.title}</h2><p class="log">${s.log}</p><p>${s.brief}</p></div>`));
+  const g = el('div', { class: 'grid' }); m.appendChild(g);
+  s.missions.forEach((mi, k) => {
+    const c = el('div', { class: 'card' + (S.done[mi.id] ? ' done' : '') }, `<span class="st">${S.done[mi.id] ? '✔ DONE' : 'MISSION ' + (k + 1)}</span><div class="ic">${mi.icon}</div><h3>${mi.name}</h3><p>${mi.desc}</p>`);
+    c.onclick = () => openMission(id, mi); g.appendChild(c);
+  });
+  const ex = el('div', { class: 'card exam' + (S.done['exam_' + id] ? ' done' : '') }, `<span class="st">${S.best[id] != null ? 'BEST ' + S.best[id] + '%' : 'EXAM'}</span><div class="ic">📝</div><h3>Field Exam ${id}</h3><p>10 random test-style questions. New mix every time. Score 80%+ to certify this section.</p>`);
+  ex.onclick = () => openQuiz(id, s.quiz, 10, 'Field Exam ' + id); g.appendChild(ex);
+  const mg = el('div', { class: 'card game' }, `<span class="st">${S.best['match_' + id] != null ? 'BEST ' + S.best['match_' + id] + 's' : 'GAME'}</span><div class="ic">🧩</div><h3>Specimen Match</h3><p>Race the clock: match every vocabulary term to its meaning.</p>`);
+  mg.onclick = () => openMatch(id); g.appendChild(mg);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function stageShell(title, goal, backTo) {
+  runCleanups(); const m = $('#main'); m.innerHTML = '';
+  const st = el('div', { class: 'stage' }); m.appendChild(st);
+  const hd = el('div', { class: 'stagehead' }); st.appendChild(hd);
+  const b = el('button', { class: 'back' }, '← Back to base'); b.onclick = () => showSection(backTo || current); hd.appendChild(b);
+  hd.appendChild(el('h2', {}, title));
+  if (goal) st.appendChild(el('div', { class: 'goal' }, goal));
+  const body = el('div'); st.appendChild(body);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  return body;
+}
+function openMission(sid, mi) { const body = stageShell(mi.icon + ' ' + mi.name, mi.goal, sid); mi.run(body, () => { complete(mi.id, mi.xp || 60, mi.name); }); }
+
+/* ================= QUIZ ENGINE ================= */
+function openQuiz(sid, bank, n, title) {
+  const body = stageShell('📝 ' + title, 'Answer like it\'s the real unit test. Every wrong answer shows you <b>why</b> — read it, that\'s how you level up. Questions and answer order reshuffle every time you play.', SECTIONS[sid] ? sid : current);
+  const qs = shuffle(bank).slice(0, n);
+  let i = 0, score = 0, streak = 0; const misses = [];
+  const head = el('div', { class: 'ctrls' }); body.appendChild(head);
+  const area = el('div'); body.appendChild(area);
+  function hud() { head.innerHTML = `<span class="pill">Question ${Math.min(i + 1, qs.length)} / ${qs.length}</span><span class="pill">Score ${score}</span><span class="pill">🔥 Streak ${streak}</span>`; }
+  function show() {
+    hud(); area.innerHTML = '';
+    if (i >= qs.length) return finish();
+    const q = qs[i];
+    const d = el('div', { class: 'q' }, `<div class="qt" style="font-size:18px">${q.q}</div>`); area.appendChild(d);
+    let answered = false;
+    shuffle(q.a.map((t, k) => ({ t, k }))).forEach(o => {
+      const b = el('button', { class: 'opt' }, o.t); b.dataset.k = o.k; d.appendChild(b);
+      b.onclick = () => {
+        if (answered) return; answered = true;
+        const ok = o.k === q.c;
+        if (ok) { score++; streak++; b.classList.add('right'); } else { streak = 0; b.classList.add('wrong'); misses.push(q); [...d.querySelectorAll('.opt')].forEach(x => { if (+x.dataset.k === q.c) x.classList.add('right'); }); }
+        d.appendChild(el('div', { class: 'explain' }, (ok ? '✔ Correct! ' : '✘ ') + (q.e || '')));
+        const nx = el('button', { class: 'btn go', style: 'margin-top:10px' }, i + 1 < qs.length ? 'Next question →' : 'See results'); nx.onclick = () => { i++; show(); }; d.appendChild(nx);
+        hud();
+      };
+    });
+  }
+  function finish() {
+    const pct = Math.round(score / qs.length * 100);
+    const key = SECTIONS[sid] ? sid : sid;
+    const prev = S.best[key]; if (prev == null || pct > prev) { S.best[key] = pct; save(); }
+    const grade = pct >= 90 ? '🌋 Legendary' : pct >= 80 ? '🏅 Certified' : pct >= 60 ? '🪨 Getting there' : '🧪 Keep experimenting';
+    area.innerHTML = `<div class="readout" style="text-align:center"><div class="big">${pct}%</div><h4>${grade}</h4><p>${score} of ${qs.length} correct. Best: ${S.best[key]}%</p></div>`;
+    addXP(score * 10, title);
+    if (pct >= 80 && SECTIONS[sid]) complete('exam_' + sid, 80, title);
+    if (sid === 'unit' && pct >= 80) complete('exam_unit', 150, 'Unit Test');
+    if (misses.length) { const r = el('div', { class: 'check' }, '<h4>📌 Review what you missed</h4>'); misses.forEach(q => r.appendChild(el('div', { class: 'explain', style: 'margin:6px 0' }, `<b>${q.q}</b><br>Answer: <span style="color:#06d6a0">${q.a[q.c]}</span><br>${q.e || ''}`))); area.appendChild(r); }
+    const again = el('button', { class: 'btn go', style: 'margin-top:12px' }, '🔁 New random exam'); again.onclick = () => openQuiz(sid, bank, n, title); area.appendChild(again);
+  }
+  show();
+}
+
+/* ================= MATCH GAME ================= */
+function openMatch(sid) {
+  const s = SECTIONS[sid];
+  const body = stageShell('🧩 Specimen Match — ' + s.title, 'Click a <b>term</b>, then click its <b>meaning</b>. Clear the board as fast as you can. Wrong matches add +3 seconds!', sid);
+  const pairs = shuffle(s.vocab).slice(0, 8);
+  const top = el('div', { class: 'ctrls' }); body.appendChild(top);
+  const grid = el('div', { class: 'matchgrid' }); body.appendChild(grid);
+  let t0 = performance.now(), penalty = 0, left = pairs.length, sel = null, over = false;
+  const tm = el('span', { class: 'timer' }, '0.0s'); top.appendChild(tm); top.appendChild(el('span', { class: 'hint' }, ' Pairs left: <b id="pl">' + left + '</b>'));
+  loop(() => { if (!over) tm.textContent = ((performance.now() - t0) / 1000 + penalty).toFixed(1) + 's'; });
+  const cards = shuffle(pairs.flatMap((p, i) => [{ k: i, t: p[0], term: true }, { k: i, t: p[1], term: false }]));
+  cards.forEach(c => {
+    const d = el('div', { class: 'mcard' + (c.term ? ' term' : '') }, c.t); grid.appendChild(d); c.d = d;
+    d.onclick = () => {
+      if (over || d.classList.contains('gone')) return;
+      if (!sel) { sel = c; d.classList.add('sel'); return; }
+      if (sel === c) { d.classList.remove('sel'); sel = null; return; }
+      if (sel.k === c.k && sel.term !== c.term) { discover(pairs[c.k][0]); sel.d.classList.add('gone'); d.classList.add('gone'); sel = null; left--; $('#pl').textContent = left; if (!left) win(); }
+      else { penalty += 3; const a = sel.d; a.classList.remove('sel'); a.classList.add('bad'); d.classList.add('bad'); setTimeout(() => { a.classList.remove('bad'); d.classList.remove('bad'); }, 400); sel = null; }
+    };
+  });
+  function win() {
+    over = true; const tt = Math.round((performance.now() - t0) / 1000 + penalty);
+    const k = 'match_' + sid; const nb = S.best[k] == null || tt < S.best[k]; if (nb) { S.best[k] = tt; save(); }
+    grid.innerHTML = `<div class="readout" style="grid-column:1/-1;text-align:center"><div class="big">${tt} seconds</div><h4>${nb ? '🏆 New personal best!' : 'Best: ' + S.best[k] + 's'}</h4><p>Every round picks a different mix of 8 terms.</p></div>`;
+    addXP(nb ? 40 : 20, 'Specimen Match');
+    const again = el('button', { class: 'btn go' }, '🔁 Play again'); again.onclick = () => openMatch(sid); grid.firstChild.appendChild(again);
+  }
+}
+
+/* ================= JOURNAL & UNIT TEST ================= */
+function openJournal() {
+  const body = stageShell('📓 Field Journal', 'Every term you discover in missions and games gets logged here. Locked entries are still waiting to be discovered — go find them! Use this as your study guide before the test.');
+  ORDER.forEach(id => {
+    const s = SECTIONS[id]; const n = s.vocab.filter(v => S.found[v[0]]).length;
+    const box = el('div', { class: 'journal check' }, `<h4>${id} ${s.title} — ${n}/${s.vocab.length} discovered</h4>`); body.appendChild(box);
+    s.vocab.forEach(v => box.appendChild(el('div', { class: 'entry' + (S.found[v[0]] ? '' : ' locked') }, S.found[v[0]] ? `<b>${v[0]}</b> — ${v[1]}` : `<b>🔒 ???</b> — <span class="hint">Undiscovered (hint: ${v[0][0]}…)</span>`)));
+  });
+  const reset = el('button', { class: 'btn', style: 'margin-top:14px' }, '♻️ Reset ALL progress'); reset.onclick = () => { if (reset.dataset.sure) { S = { xp: 0, done: {}, best: {}, found: {} }; save(); drawHUD(); openJournal(); toast('Progress reset. Fresh start, scientist!'); } else { reset.dataset.sure = 1; reset.textContent = 'Click again to confirm reset'; } };
+  body.appendChild(reset);
+}
+function openUnit() {
+  const bank = ORDER.flatMap(id => SECTIONS[id].quiz);
+  openQuiz('unit', bank, 25, 'Chapter 7 Unit Test (25 Qs, all sections)');
+}
+$('#btnJournal').onclick = openJournal;
+$('#btnExam').onclick = openUnit;
+/* ================= 7.1 INSIDE THE EARTH ================= */
+SECTIONS['7.1'] = {
+  title: 'Inside the Earth', avatar: '🌍',
+  log: '> RESEARCH LOG · DAY 1 · No human has ever drilled through the crust...',
+  brief: 'Nobody has ever visited Earth\'s deep interior. Your job: use earthquakes, rock samples and scanners to figure out what\'s down there — just like the first seismologists did.',
+  vocab: [
+    ['Crust', 'Thinnest, outermost layer of Earth; less than 1% of Earth\'s mass'],
+    ['Mantle', 'Layer between crust and core; 67% of Earth\'s mass, about 2,900 km thick'],
+    ['Core', 'Center layer, mostly iron with some nickel; 33% of Earth\'s mass'],
+    ['Compound', 'A substance made of two or more elements'],
+    ['Continental crust', 'Crust that forms continents; thicker (up to 100 km) and less dense'],
+    ['Oceanic crust', 'Crust under oceans; 5–7 km thick, denser, more iron'],
+    ['Lithosphere', 'Cool, stiff outer layer: all the crust + top of the upper mantle'],
+    ['Asthenosphere', 'Layer of hot, solid rock that flows very slowly; plates ride on it'],
+    ['Mesosphere', 'Lower part of the mantle; flows more slowly than the asthenosphere'],
+    ['Outer core', 'Liquid layer of iron and nickel'],
+    ['Inner core', 'Solid ball of iron and nickel — solid because of huge pressure'],
+    ['Tectonic plate', 'A piece of the lithosphere that moves on the asthenosphere'],
+    ['Seismic waves', 'Vibrations created by earthquakes that travel through Earth'],
+    ['Seismometer', 'Instrument that detects and records seismic waves'],
+  ],
+  quiz: [
+    { q: 'What are Earth\'s three layers based on COMPOSITION?', a: ['Crust, mantle, core', 'Lithosphere, asthenosphere, mesosphere', 'Inner core, outer core, mantle', 'Crust, lithosphere, core'], c: 0, e: 'Composition = what the layer is made of (its compounds): crust, mantle, core.' },
+    { q: 'Which layer is the thinnest and outermost?', a: ['Crust', 'Mantle', 'Lithosphere', 'Mesosphere'], c: 0, e: 'The crust is the thinnest, outermost layer — less than 1% of Earth\'s mass.' },
+    { q: 'Which part of Earth is made of the DENSEST elements?', a: ['The core', 'The crust', 'The mantle', 'The asthenosphere'], c: 0, e: 'Densest elements sank to the center → the core. Less-dense compounds make up the crust and mantle.' },
+    { q: 'Continental crust can be up to about how thick?', a: ['100 km', '5 km', '2,900 km', '7 km'], c: 0, e: 'Continental crust can be up to 100 km thick.' },
+    { q: 'Most oceanic crust is about how thick?', a: ['5 km to 7 km', '30 km to 100 km', '2,900 km', '3,480 km'], c: 0, e: 'Oceanic crust is thin: usually 5–7 km.' },
+    { q: 'How is oceanic crust different from continental crust?', a: ['It is thinner, denser, and contains more iron', 'It is thicker and less dense', 'It is made mostly of nickel', 'It floats higher than continents'], c: 0, e: 'Oceanic crust = thinner + denser + more iron. Continental crust = thicker + less dense.' },
+    { q: 'Which layer contains MOST of Earth\'s mass?', a: ['Mantle (67%)', 'Core (33%)', 'Crust (less than 1%)', 'Lithosphere (50%)'], c: 0, e: 'The mantle holds about 67% of Earth\'s mass.' },
+    { q: 'Why is the mantle denser than the crust?', a: ['It has more magnesium and less aluminum', 'It has more water', 'It is made of liquid iron', 'It is colder than the crust'], c: 0, e: 'More magnesium + less aluminum → denser than the crust.' },
+    { q: 'Since no one can drill to the mantle, how do scientists learn about it?', a: ['Study mantle rock pushed to the surface and lava from ocean-floor volcanoes', 'Send robots down volcanoes to the mantle', 'Look at the Moon', 'Measure the temperature of the ocean'], c: 0, e: 'Some mantle rock pushes up to the surface, and underwater volcanoes bring up melted mantle rock.' },
+    { q: 'The core is made mostly of...', a: ['Iron, with smaller amounts of nickel', 'Oxygen and silicon', 'Aluminum and magnesium', 'Liquid water'], c: 0, e: 'Iron + a little nickel. Scientists think it has very little oxygen, silicon, aluminum or magnesium.' },
+    { q: 'About what percent of Earth\'s mass is the core?', a: ['33%', '67%', 'Less than 1%', '90%'], c: 0, e: 'Core ≈ 33%, mantle ≈ 67%, crust < 1%.' },
+    { q: 'How thick is the mantle?', a: ['About 2,900 km', 'About 100 km', 'About 7 km', 'About 3,480 km'], c: 0, e: 'Mantle ≈ 2,900 km thick. (3,480 km is the core\'s radius.)' },
+    { q: 'What is the radius of the core?', a: ['3,480 km', '2,900 km', '100 km', '50,000 km'], c: 0, e: 'Core radius ≈ 3,480 km.' },
+    { q: 'What are Earth\'s five layers based on PHYSICAL properties (outside → in)?', a: ['Lithosphere, asthenosphere, mesosphere, outer core, inner core', 'Crust, mantle, outer core, inner core, center', 'Asthenosphere, lithosphere, mesosphere, inner core, outer core', 'Crust, lithosphere, mantle, mesosphere, core'], c: 0, e: 'Physical layers: lithosphere → asthenosphere → mesosphere → outer core → inner core.' },
+    { q: 'What is the lithosphere?', a: ['The cool, stiff outer layer made of the crust and the top of the upper mantle', 'A layer of liquid iron', 'The hot, slowly flowing layer under the plates', 'The lower part of the mantle'], c: 0, e: 'Lithosphere = cool + stiff, includes ALL the crust and a small part of the upper mantle. It is broken into plates.' },
+    { q: 'What is the asthenosphere?', a: ['A layer of hot, solid rock that flows very slowly', 'A layer of liquid iron and nickel', 'The cool stiff outer layer', 'The solid center of Earth'], c: 0, e: 'Asthenosphere = hot SOLID rock that can flow very slowly. Plates move on top of it.' },
+    { q: 'Which layer is the lower part of the mantle and flows more slowly than the asthenosphere?', a: ['Mesosphere', 'Lithosphere', 'Outer core', 'Crust'], c: 0, e: 'The mesosphere is the lower mantle; it flows more slowly than the asthenosphere.' },
+    { q: 'The outer core is...', a: ['Liquid iron and nickel', 'Solid iron and nickel', 'Hot solid rock that flows', 'Cool stiff rock'], c: 0, e: 'Outer core = LIQUID iron and nickel.' },
+    { q: 'Why is the inner core solid even though it is extremely hot?', a: ['It is under very high pressure', 'It is very cold', 'It is made of rock, not metal', 'It is not moving'], c: 0, e: 'Enormous pressure keeps the inner core solid.' },
+    { q: 'Tectonic plates are pieces of the ______ that move on top of the ______.', a: ['lithosphere; asthenosphere', 'asthenosphere; mesosphere', 'core; mantle', 'mesosphere; lithosphere'], c: 0, e: 'Plates = pieces of lithosphere riding on the asthenosphere.' },
+    { q: 'Which plate is made mostly of OCEANIC lithosphere?', a: ['Pacific plate', 'Eurasian plate', 'African plate', 'North American plate'], c: 0, e: 'The Pacific plate (and the Nazca and Cocos plates) are mostly oceanic.' },
+    { q: 'The South American plate is THICKEST where it contains...', a: ['Continental crust', 'Oceanic crust', 'A mid-ocean ridge', 'Only mantle'], c: 0, e: 'Plates are thickest where there is continental crust and thinnest where there is oceanic crust.' },
+    { q: 'What are seismic waves?', a: ['Vibrations created by earthquakes', 'Ocean waves caused by wind', 'Magnetic stripes on the sea floor', 'Heat currents in the mantle'], c: 0, e: 'Earthquakes create vibrations called seismic waves.' },
+    { q: 'The speed of a seismic wave depends on...', a: ['The density and composition of the material it passes through', 'The time of day', 'How loud the earthquake is', 'The color of the rock'], c: 0, e: 'Different density & composition → different speeds, which reveals Earth\'s layers.' },
+    { q: 'What instrument detects seismic waves?', a: ['Seismometer', 'Thermometer', 'GPS', 'Compass'], c: 0, e: 'Seismometers measure when seismic waves arrive at different distances from an earthquake.' },
+    { q: 'How do scientists know the outer core is liquid?', a: ['Some seismic waves cannot travel through liquid, so some seismometers don\'t record them', 'Astronauts have seen it', 'They drilled into it', 'Volcanoes erupt liquid iron'], c: 0, e: 'Some waves (S-waves) can\'t pass through liquids → a "shadow" where seismometers don\'t record them.' },
+    { q: 'Have scientists ever drilled all the way through the crust?', a: ['No — the crust is too thick', 'Yes, to the mantle', 'Yes, to the core', 'Yes, many times'], c: 0, e: 'No one has drilled through the crust, so scientists use indirect evidence like seismic waves.' },
+    { q: 'MATH: Oceanic crust is 5 km thick; the thickest continental crust is 100 km. What fraction is that?', a: ['1/20', '1/5', '1/2', '20/1'], c: 0, e: '5/100 reduces to 1/20.' },
+    { q: 'Why do scientists use TWO sets of layers?', a: ['One is based on composition, the other on physical properties', 'Because they disagree', 'One set is for oceans, the other for land', 'One is for the past, one for today'], c: 0, e: 'Compositional layers (what it\'s made of) vs. physical layers (stiff, flowing, liquid, solid).' },
+    { q: 'Which statement about the lithosphere is TRUE?', a: ['It is divided into pieces that move slowly', 'It is liquid', 'It is the lower mantle', 'It is only oceanic crust'], c: 0, e: 'The lithosphere is broken into tectonic plates that slowly move.' },
+  ],
+  missions: []
+};
+
+/* ---- Mission 1: Seismic Probe ---- */
+SECTIONS['7.1'].missions.push({
+  id: 'm71a', icon: '📈', name: 'Seismic Probe', xp: 70,
+  desc: 'Trigger earthquakes and track the waves through Earth to find a hidden liquid layer.',
+  goal: '<b>Goal:</b> Click anywhere on Earth\'s surface (the outer edge) to set off an earthquake. 36 seismometer stations listen around the planet. Try <b>P-waves</b> and <b>S-waves</b> — one of them can\'t get through liquid. Where are the silent stations?',
+  run(body, done) {
+    const row = el('div', { class: 'row' }); body.appendChild(row);
+    const c1 = el('div', { class: 'col', style: 'flex:1.6' }); const c2 = el('div', { class: 'col' }); row.appendChild(c1); row.appendChild(c2);
+    const C = mkCanvas(c1, 700, 520), ctx = C.ctx;
+    const ctr = el('div', { class: 'ctrls' }); c1.appendChild(ctr);
+    let mode = 'S';
+    const bP = el('button', { class: 'btn' }, '🟦 P-waves (go through solids AND liquids)'), bS = el('button', { class: 'btn on' }, '🟥 S-waves (solids ONLY)');
+    bP.onclick = () => { mode = 'P'; bP.classList.add('on'); bS.classList.remove('on'); }; bS.onclick = () => { mode = 'S'; bS.classList.add('on'); bP.classList.remove('on'); };
+    ctr.append(bP, bS);
+    const ro = el('div', { class: 'readout' }, '<h4>📡 Seismograph Network</h4>Click on Earth\'s surface to trigger an earthquake.<br><span class="mono">STATUS: awaiting event…</span>'); c2.appendChild(ro);
+    const chk = el('div'); c2.appendChild(chk);
+    lockedCheck(chk, 'Discovery Check', 'Run an S-wave earthquake to unlock.');
+    const cx = 350, cy = 265, R = 235, rc = R * 0.546, ri = R * 0.19;
+    const stations = Array.from({ length: 36 }, (_, i) => { const a = i / 36 * Math.PI * 2; return { a, x: cx + Math.cos(a) * R, y: cy + Math.sin(a) * R, st: 0 }; });
+    let quake = null, t = 0, sRuns = 0, unlocked = false;
+    C.cv.onclick = e => {
+      const p = C.pos(e); const dx = p.x - cx, dy = p.y - cy; const d = Math.hypot(dx, dy);
+      if (d < R - 50 || d > R + 40) { toast('Click near the SURFACE (outer edge) — that\'s where earthquakes happen.'); return; }
+      const a = Math.atan2(dy, dx); quake = { x: cx + Math.cos(a) * R, y: cy + Math.sin(a) * R, a, mode }; t = 0;
+      stations.forEach(s => { s.st = 0; const L = Math.hypot(s.x - quake.x, s.y - quake.y); s.dist = L; // blocked by core?
+        const qx = quake.x - cx, qy = quake.y - cy, ux = (s.x - quake.x) / (L || 1), uy = (s.y - quake.y) / (L || 1);
+        const proj = -(qx * ux + qy * uy); const pp = clamp(proj, 0, L); const px = qx + ux * pp, py = qy + uy * pp; s.block = Math.hypot(px, py) < rc; });
+    };
+    const rays = [];
+    function drawEarth() {
+      ctx.clearRect(0, 0, 700, 520);
+      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, R);
+      ctx.beginPath(); ctx.arc(cx, cy, R, 0, 7); ctx.fillStyle = '#7a3b1f'; ctx.fill();
+      ctx.beginPath(); ctx.arc(cx, cy, R - 6, 0, 7); ctx.fillStyle = '#b5532a'; ctx.fill();
+      ctx.beginPath(); ctx.arc(cx, cy, rc, 0, 7); ctx.fillStyle = '#f2a23a'; ctx.fill();
+      ctx.beginPath(); ctx.arc(cx, cy, ri, 0, 7); ctx.fillStyle = '#ffe08a'; ctx.fill();
+      ctx.beginPath(); ctx.arc(cx, cy, R, 0, 7); ctx.strokeStyle = '#3d7a3d'; ctx.lineWidth = 6; ctx.stroke();
+      txt(ctx, 'MANTLE (solid)', cx, cy - rc - 50, { c: '#ffd9c2', size: 13 });
+      txt(ctx, 'OUTER CORE ???', cx, cy - rc + 30, { c: '#3b1d00', size: 13 });
+      txt(ctx, 'INNER CORE', cx, cy, { c: '#5b3a00', size: 11 });
+    }
+    loop(dt => {
+      drawEarth();
+      if (quake) {
+        t += dt; const front = t * 260; const qx = quake.x - cx, qy = quake.y - cy;
+        const inward = Math.atan2(-qy, -qx);
+        for (let k = -40; k <= 40; k++) {
+          const ang = inward + k / 40 * 1.45; const ux = Math.cos(ang), uy = Math.sin(ang);
+          const b = qx * ux + qy * uy; let L = -2 * b; let hit = false;
+          if (quake.mode === 'S') { const disc = b * b - (R * R - rc * rc); if (disc > 0) { const s1 = -b - Math.sqrt(disc); if (s1 > 0 && s1 < L) { L = s1; hit = true; } } }
+          const s = Math.min(front, L);
+          ctx.beginPath(); ctx.moveTo(quake.x, quake.y); ctx.lineTo(quake.x + ux * s, quake.y + uy * s);
+          ctx.strokeStyle = quake.mode === 'S' ? 'rgba(255,80,110,.55)' : 'rgba(80,190,255,.55)'; ctx.lineWidth = 1.5; ctx.stroke();
+          if (front < L) { ctx.beginPath(); ctx.arc(quake.x + ux * s, quake.y + uy * s, 2.5, 0, 7); ctx.fillStyle = '#fff'; ctx.fill(); }
+          else if (hit && front < L + 60) { ctx.beginPath(); ctx.arc(quake.x + ux * L, quake.y + uy * L, 4, 0, 7); ctx.fillStyle = '#ff2e63'; ctx.fill(); }
+        }
+        // quake star
+        ctx.save(); ctx.translate(quake.x, quake.y); ctx.rotate(t * 3); txt(ctx, '💥', 0, 0, { size: 26 }); ctx.restore();
+        let rec = 0, sil = 0;
+        stations.forEach(s => { if (front >= s.dist) { s.st = (quake.mode === 'S' && s.block) ? 2 : 1; } if (s.st === 1) rec++; if (s.st === 2) sil++; });
+        const fin = front > 2 * R + 20;
+        ro.innerHTML = `<h4>📡 Seismograph Network</h4>Wave type: <b style="color:${quake.mode === 'S' ? '#ff6b8b' : '#6fd3ff'}">${quake.mode}-waves</b><br>Stations recording: <b style="color:#06d6a0">${rec}</b> / 36<br>Silent stations: <b style="color:#ef476f">${sil}</b><br><span class="mono">${fin ? (quake.mode === 'S' && sil ? 'ANALYSIS: A "shadow zone" — S-waves stopped at the outer core boundary!' : 'ANALYSIS: waves reached every station.') : 'Tracking waves...'}</span>`;
+        if (fin && !quake.logged) { quake.logged = true; if (quake.mode === 'S') { sRuns++; discover('Seismic waves'); discover('Seismometer'); } if (sRuns >= 1 && !unlocked) { unlocked = true; unlock(); } }
+      }
+      stations.forEach(s => {
+        ctx.beginPath(); ctx.arc(s.x, s.y, 6, 0, 7);
+        ctx.fillStyle = s.st === 1 ? '#06d6a0' : s.st === 2 ? '#ef476f' : '#cfd8e3'; ctx.fill(); ctx.strokeStyle = '#000'; ctx.lineWidth = 1; ctx.stroke();
+        if (s.st === 2) txt(ctx, '✖', s.x + Math.cos(s.a) * 16, s.y + Math.sin(s.a) * 16, { c: '#ef476f', size: 13 });
+      });
+      txt(ctx, '● recording   ● silent   ● waiting', 120, 505, { c: '#9fb6cf', size: 12, b: false });
+      txt(ctx, '(simplified: waves drawn as straight lines)', 560, 505, { c: '#6c85a0', size: 11, b: false });
+    });
+    function unlock() {
+      chk.innerHTML = '';
+      checkpoint(chk, 'Discovery Check — what did you find?', [
+        { q: 'With S-waves, stations on the far side went SILENT. What does that tell you?', a: ['The outer core is liquid — S-waves can\'t travel through liquids', 'The earthquake was too weak', 'The seismometers were broken', 'The inner core is hollow'], c: 0, e: 'Some seismic waves cannot travel through liquids, so seismometers in the "shadow" don\'t record them. That\'s how we know the outer core is liquid!', term: 'Outer core' },
+        { q: 'Seismic waves travel at different speeds through Earth\'s layers because the layers have different...', a: ['Density and composition', 'Colors', 'Ages', 'Temperatures of air'], c: 0, e: 'Speed depends on density and composition — so wave timing reveals each layer\'s thickness and density.' },
+        { q: 'Seismologists use seismometers to measure...', a: ['The times seismic waves arrive at different distances from an earthquake', 'How hot the mantle is', 'Magnetic stripes', 'Plate speed with satellites'], c: 0, e: 'Arrival times + distances let scientists calculate the density and thickness of each layer.' },
+      ], done);
+    }
+  }
+});
+
+/* ---- Mission 2: Layer Scanner ---- */
+SECTIONS['7.1'].missions.push({
+  id: 'm71b', icon: '🛰️', name: 'Deep Layer Scanner', xp: 80,
+  desc: 'Scan Earth\'s interior and label all 3 compositional and 5 physical layers.',
+  goal: '<b>Goal:</b> Click any layer to <b>scan</b> it. Then pick a label chip and click the layer it belongs to. Label BOTH views: <b>Composition</b> (what it\'s made of) and <b>Physical</b> (how it behaves).',
+  run(body, done) {
+    const L = {
+      comp: [
+        { n: 'Crust', r: 250, fill: '#5f8f4e', info: 'Thinnest, outermost layer. <b>Less than 1%</b> of Earth\'s mass, <b>5–100 km</b> thick. Made of the least-dense compounds. Two kinds: continental (thick, less dense) & oceanic (thin, denser, more iron).' },
+        { n: 'Mantle', r: 232, fill: '#b5532a', info: 'Between crust and core. <b>67%</b> of Earth\'s mass, about <b>2,900 km</b> thick. More <b>magnesium</b> and less <b>aluminum</b> than the crust → denser. Studied using rock pushed to the surface and lava from ocean-floor volcanoes.' },
+        { n: 'Core', r: 135, fill: '#f2a23a', info: 'Center of Earth. <b>33%</b> of Earth\'s mass, radius <b>3,480 km</b>. Mostly <b>iron</b> with smaller amounts of <b>nickel</b>. Made of the densest elements.' },
+      ],
+      phys: [
+        { n: 'Lithosphere', r: 250, fill: '#6b8f5a', info: '<b>Cool, stiff</b> outer layer: ALL of the crust + a small part of the upper mantle. Broken into pieces (tectonic plates) that move slowly.' },
+        { n: 'Asthenosphere', r: 226, fill: '#e0662f', info: 'Layer of <b>hot, solid rock that flows very slowly</b>. The tectonic plates move on top of it.' },
+        { n: 'Mesosphere', r: 200, fill: '#a3472a', info: 'The <b>lower part of the mantle</b>. Flows <b>more slowly</b> than the asthenosphere.' },
+        { n: 'Outer core', r: 135, fill: '#f2a23a', info: '<b>Liquid</b> iron and nickel. (We know because some seismic waves can\'t pass through it!)' },
+        { n: 'Inner core', r: 60, fill: '#ffe08a', info: '<b>Solid</b> ball of iron and nickel. Solid because it is under <b>very high pressure</b>.' },
+      ]
+    };
+    let view = 'comp', sel = null; const labeled = { comp: {}, phys: {} };
+    const ctr = el('div', { class: 'ctrls' }); body.appendChild(ctr);
+    const bc = el('button', { class: 'btn on' }, '🧪 Composition view (3 layers)'), bp = el('button', { class: 'btn' }, '⚙️ Physical view (5 layers)');
+    ctr.append(bc, bp);
+    const row = el('div', { class: 'row' }); body.appendChild(row);
+    const c1 = el('div', { class: 'col', style: 'flex:1.4' }), c2 = el('div', { class: 'col' }); row.append(c1, c2);
+    const svgWrap = el('div'); c1.appendChild(svgWrap);
+    const chips = el('div', { style: 'margin-top:8px' }); c1.appendChild(chips);
+    const ro = el('div', { class: 'readout' }, '<h4>🛰️ Scanner ready</h4>Click a layer to scan it.'); c2.appendChild(ro);
+    const prog = el('div', { class: 'hint', style: 'margin-top:8px' }); c2.appendChild(prog);
+    const chk = el('div'); c2.appendChild(chk);
+    bc.onclick = () => { view = 'comp'; bc.classList.add('on'); bp.classList.remove('on'); draw(); };
+    bp.onclick = () => { view = 'phys'; bp.classList.add('on'); bc.classList.remove('on'); draw(); };
+    function draw() {
+      const ls = L[view]; sel = null;
+      let s = `<svg class="sim" viewBox="0 0 640 540"><defs><radialGradient id="glow"><stop offset="0" stop-color="#fff" stop-opacity=".25"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>`;
+      ls.forEach((l, i) => { s += `<circle data-i="${i}" cx="270" cy="270" r="${l.r}" fill="${l.fill}" stroke="#0b1726" stroke-width="2" style="cursor:pointer"/>`; });
+      s += `<circle cx="270" cy="270" r="250" fill="url(#glow)" pointer-events="none"/>`;
+      ls.forEach((l, i) => {
+        const next = ls[i + 1] ? ls[i + 1].r : 0; const mid = (l.r + next) / 2; const ang = -0.9 + i * 0.42; const px = 270 + Math.cos(ang) * mid, py = 270 + Math.sin(ang) * mid;
+        const ly = 60 + i * 95, lx = 545;
+        const got = labeled[view][l.n];
+        s += `<circle cx="${px}" cy="${py}" r="5" fill="#fff" pointer-events="none"/><line x1="${px}" y1="${py}" x2="${lx - 60}" y2="${ly}" stroke="#fff" stroke-dasharray="4 3" pointer-events="none"/>`;
+        s += `<rect data-i="${i}" x="${lx - 95}" y="${ly - 16}" width="190" height="32" rx="8" fill="${got ? '#0b3b2e' : '#0a1320'}" stroke="${got ? '#06d6a0' : '#ffb703'}" stroke-width="2" style="cursor:pointer"/><text data-i="${i}" x="${lx}" y="${ly + 5}" text-anchor="middle" fill="${got ? '#06d6a0' : '#ffb703'}" font-weight="bold" font-size="15" style="cursor:pointer">${got ? l.n : '? ? ?'}</text>`;
+      });
+      s += `<text x="270" y="532" text-anchor="middle" fill="#9fb6cf" font-size="12">Not to scale — crust is drawn much thicker so you can click it</text></svg>`;
+      svgWrap.innerHTML = s;
+      svgWrap.querySelectorAll('[data-i]').forEach(n => n.onclick = () => clickLayer(+n.dataset.i));
+      chips.innerHTML = '<div class="hint">Label chips — click one, then click its layer (or its ? ? ? box):</div>';
+      shuffle(ls).forEach(l => { const c = el('span', { class: 'chip' + (labeled[view][l.n] ? ' ok' : '') }, l.n); c.onclick = () => { if (labeled[view][l.n]) return; chips.querySelectorAll('.chip').forEach(x => x.classList.remove('sel')); c.classList.add('sel'); sel = { n: l.n, c }; }; chips.appendChild(c); });
+      const nC = Object.keys(labeled.comp).length, nP = Object.keys(labeled.phys).length;
+      prog.innerHTML = `Composition labels: <b>${nC}/3</b> · Physical labels: <b>${nP}/5</b>`;
+    }
+    function clickLayer(i) {
+      const l = L[view][i];
+      ro.innerHTML = `<h4>🛰️ SCAN: ${labeled[view][l.n] || !sel ? (labeled[view][l.n] ? l.n : 'Unknown layer #' + (i + 1)) : 'Unknown layer'}</h4>${l.info}`;
+      if (!sel) return;
+      if (sel.n === l.n) { labeled[view][l.n] = true; discover(l.n); toast('✅ Correct: ' + l.n); draw(); check(); }
+      else { sel.c.classList.add('bad'); setTimeout(() => sel && sel.c.classList.remove('bad'), 400); toast('❌ That\'s not the ' + sel.n + '. Read the scan clues!'); }
+    }
+    let unlocked = false;
+    function check() {
+      if (unlocked || Object.keys(labeled.comp).length < 3 || Object.keys(labeled.phys).length < 5) return; unlocked = true;
+      checkpoint(chk, 'Discovery Check', [
+        { q: 'Why do scientists divide Earth into two different sets of layers?', a: ['One set is based on composition, the other on physical properties', 'Because the layers keep changing', 'One set is for the north half of Earth', 'They are the same layers with different names'], c: 0, e: 'Composition = what it\'s made of. Physical = how it behaves (stiff, flowing, liquid, solid).' },
+        { q: 'The lithosphere includes...', a: ['All of the crust and a small part of the upper mantle', 'Only the oceanic crust', 'The outer core', 'The mesosphere'], c: 0, e: 'Lithosphere = crust + top of the upper mantle. It is cool and stiff.', term: 'Lithosphere' },
+        { q: 'Which physical layer do the tectonic plates move on?', a: ['Asthenosphere', 'Mesosphere', 'Inner core', 'Outer core'], c: 0, e: 'Plates (pieces of lithosphere) slide on the slowly flowing asthenosphere.', term: 'Tectonic plate' },
+      ], done);
+    }
+    draw();
+  }
+});
+
+/* ---- Mission 3: Crust & Plate Lab ---- */
+SECTIONS['7.1'].missions.push({
+  id: 'm71c', icon: '🪨', name: 'Crust Sample Lab', xp: 70,
+  desc: 'Sort crust samples, measure their thickness, and inspect a real tectonic plate.',
+  goal: '<b>Goal:</b> You collected two crust samples. Sort each clue into the right sample bin. Then inspect the South American plate and finish the Math Focus.',
+  run(body, done) {
+    const viz = el('div'); body.appendChild(viz);
+    viz.innerHTML = `<svg class="sim" viewBox="0 0 700 250">
+      <text x="20" y="24" fill="#9fb6cf" font-size="13">THICKNESS GAUGE (to scale)</text>
+      <rect x="120" y="40" width="140" height="200" fill="#8a7a5a" stroke="#fff"/>
+      <text x="190" y="140" text-anchor="middle" fill="#fff" font-weight="bold">Sample A</text><text x="190" y="160" text-anchor="middle" fill="#fff" font-size="12">up to 100 km</text>
+      <line x1="100" y1="40" x2="100" y2="240" stroke="#ffb703" stroke-width="2"/><text x="60" y="140" fill="#ffb703" font-size="12">100 km</text>
+      <rect x="420" y="228" width="140" height="12" fill="#3a5a7a" stroke="#fff"/>
+      <text x="490" y="215" text-anchor="middle" fill="#fff" font-weight="bold">Sample B</text><text x="610" y="236" fill="#ffb703" font-size="12">5–7 km</text>
+      <text x="350" y="100" text-anchor="middle" fill="#9fb6cf" font-size="12">Which is continental? Which is oceanic?</text>
+    </svg>`;
+    const facts = [
+      ['Forms the continents', 'C'], ['Found beneath the oceans', 'O'], ['Up to 100 km thick', 'C'], ['Usually 5–7 km thick', 'O'],
+      ['Thicker', 'C'], ['Thinner', 'O'], ['Less dense', 'C'], ['Denser', 'O'], ['Contains more iron', 'O'], ['Sample A in the gauge', 'C'], ['Sample B in the gauge', 'O']
+    ];
+    const pool = el('div', { style: 'margin:10px 0' }, '<div class="hint">Clue cards — click one, then click a bin:</div>'); body.appendChild(pool);
+    const bins = el('div', { class: 'bins' }); body.appendChild(bins);
+    const bC = el('div', { class: 'bin' }, '<h4>🏔️ Continental crust</h4>'), bO = el('div', { class: 'bin' }, '<h4>🌊 Oceanic crust</h4>'); bins.append(bC, bO);
+    let sel = null, left = facts.length;
+    shuffle(facts).forEach(f => { const c = el('span', { class: 'chip' }, f[0]); c.onclick = () => { pool.querySelectorAll('.chip').forEach(x => x.classList.remove('sel')); c.classList.add('sel'); sel = { f, c }; }; pool.appendChild(c); });
+    const drop = (bin, k) => () => { if (!sel) return; if (sel.f[1] === k) { sel.c.classList.remove('sel'); sel.c.classList.add('ok'); sel.c.onclick = null; bin.appendChild(sel.c); sel = null; left--; if (!left) phase2(); } else { const c = sel.c; c.classList.add('bad'); setTimeout(() => c.classList.remove('bad'), 400); toast('Hmm — check the thickness gauge and think about iron & density.'); } };
+    bC.onclick = drop(bC, 'C'); bO.onclick = drop(bO, 'O');
+    function phase2() {
+      discover('Continental crust'); discover('Oceanic crust'); toast('🧪 Samples classified!');
+      const sec = el('div', { class: 'check' }, '<h4>🔬 Plate Inspector: South American plate (lifted off the asthenosphere)</h4><div class="hint">Click the glowing scan points.</div>'); body.appendChild(sec);
+      const spots = [
+        { x: 175, y: 95, n: 'Andes mountain range', i: 'Tall mountains on the continental edge of the plate.' },
+        { x: 250, y: 130, n: 'Continental crust', i: 'The THICK part of the plate — the plate is thickest where it has continental crust.' },
+        { x: 470, y: 150, n: 'Oceanic crust', i: 'The THIN part of the plate, under the Atlantic Ocean.' },
+        { x: 620, y: 175, n: 'Mid-ocean ridge', i: 'The plate\'s edge in the middle of the Atlantic, where new crust forms.' },
+        { x: 300, y: 215, n: 'Mantle material', i: 'A plate (lithosphere) includes some upper-mantle rock under the crust.' },
+      ];
+      const seen = {};
+      const wrap = el('div'); sec.appendChild(wrap);
+      wrap.innerHTML = `<svg class="sim" viewBox="0 0 700 260">
+        <path d="M60 110 L140 70 L180 60 L200 80 L260 95 L340 120 L700 160 L700 190 L340 175 L260 250 L120 235 Z" fill="#6d5f45" stroke="#fff"/>
+        <path d="M60 110 L140 70 L180 60 L200 80 L260 95 L340 120 L700 160 L700 172 L340 140 L250 130 L80 125Z" fill="#8a9a5a"/>
+        <path d="M340 120 L700 160 L700 172 L340 140Z" fill="#3a5a7a"/>
+        <path d="M150 72 L165 45 L180 60 L190 40 L205 78" fill="#cfd8e3"/>
+        <path d="M600 158 L620 140 L640 162" fill="#5a7a9a" stroke="#fff"/>
+        ${spots.map((s, k) => `<g data-k="${k}" style="cursor:pointer"><circle cx="${s.x}" cy="${s.y}" r="13" fill="#ffb70355" stroke="#ffb703" stroke-width="2"><animate attributeName="r" values="10;15;10" dur="1.4s" repeatCount="indefinite"/></circle><text x="${s.x}" y="${s.y + 5}" text-anchor="middle" fill="#fff" font-weight="bold">${k + 1}</text></g>`).join('')}
+      </svg><div class="readout" id="pi"><h4>Plate Inspector</h4>Click a numbered point.</div>`;
+      wrap.querySelectorAll('g[data-k]').forEach(g => g.onclick = () => { const s = spots[+g.dataset.k]; seen[s.n] = 1; $('#pi').innerHTML = `<h4>${s.n}</h4>${s.i}<br><span class="mono">Points scanned: ${Object.keys(seen).length}/5</span>`; if (Object.keys(seen).length === 5 && !sec.dataset.u) { sec.dataset.u = 1; final(); } });
+    }
+    function final() {
+      checkpoint(body, 'Discovery Check + Math Focus', [
+        { q: 'Which type of crust is thicker?', a: ['Continental crust', 'Oceanic crust', 'They are the same', 'It depends on the weather'], c: 0, e: 'Continental crust (up to 100 km) is thicker than oceanic crust (5–7 km).' },
+        { q: 'MATH FOCUS: Oceanic crust is 5 km thick. The thickest continental crust is 100 km. What fraction of the continental thickness is the oceanic thickness?', a: ['1/20', '1/5', '5/10', '1/2'], c: 0, e: '5 ÷ 100 = 5/100 = 1/20.' },
+        { q: 'Which plate is made mostly of OCEANIC lithosphere?', a: ['Pacific plate', 'Eurasian plate', 'North American plate', 'African plate'], c: 0, e: 'Pacific, Nazca and Cocos plates are mostly oceanic. Eurasian is mostly continental.' },
+        { q: 'Crust is made of...', a: ['The less-dense compounds', 'The densest elements', 'Liquid iron', 'Mostly nickel'], c: 0, e: 'Densest elements → core. Less-dense compounds → crust and mantle.', term: 'Compound' },
+      ], () => { discover('Crust'); done(); });
+    }
+  }
+});
+/* ================= 7.2 RESTLESS CONTINENTS ================= */
+SECTIONS['7.2'] = {
+  title: 'Restless Continents', avatar: '🧭',
+  log: '> EXPEDITION LOG · EARLY 1900s · The coastlines on this map look... suspicious.',
+  brief: 'You are following in the footsteps of Alfred Wegener. Collect the evidence that the continents MOVE — then travel to the 1960s ocean floor to find proof hidden in the rocks\' magnetism.',
+  vocab: [
+    ['Continental drift', 'Hypothesis that continents were once one landmass that broke up and drifted apart'],
+    ['Alfred Wegener', 'German scientist who proposed continental drift in the early 1900s'],
+    ['Pangaea', 'Supercontinent ~245 million years ago; Greek for "all Earth"'],
+    ['Panthalassa', 'Huge sea around Pangaea; Greek for "all sea"'],
+    ['Laurasia', 'Northern landmass after Pangaea first split (~135 mya)'],
+    ['Gondwana', 'Southern landmass after Pangaea first split (~135 mya)'],
+    ['Supercontinent', 'A single giant landmass made of all the continents'],
+    ['Mid-ocean ridge', 'Undersea mountain chain ~50,000 km long; site of intense volcanic activity'],
+    ['Sea-floor spreading', 'Melted rock rises at a ridge, cools into new crust, and pushes older crust away'],
+    ['Magnetic reversal', 'When Earth\'s north and south magnetic poles switch places'],
+    ['Normal polarity', 'Magnetic field like today: a compass needle points to the North Pole'],
+    ['Reverse polarity', 'Flipped field: a compass needle points to the South Pole'],
+    ['Fossil evidence', 'Same fossils (Mesosaurus, Glossopteris) found on continents an ocean apart'],
+  ],
+  quiz: [
+    { q: 'Who proposed the hypothesis of continental drift?', a: ['Alfred Wegener', 'Isaac Newton', 'Charles Darwin', 'Albert Einstein'], c: 0, e: 'Alfred Wegener, a German scientist, in the early 1900s.' },
+    { q: 'According to continental drift, the continents...', a: ['Once formed a single landmass, then broke up and drifted to their current locations', 'Have never moved', 'Are sinking into the mantle', 'Were formed by meteor impacts'], c: 0, e: 'One landmass → broke apart → drifted.' },
+    { q: 'Why do South America and Africa seem to fit together like puzzle pieces?', a: ['They were once part of a single continent', 'Ocean waves carved them the same way', 'It is a coincidence', 'They are moving toward each other right now'], c: 0, e: 'They were once joined and have since broken apart.' },
+    { q: 'Similar fossils of Mesosaurus and Glossopteris are found in South America AND Africa. What does this show?', a: ['The continents were once joined', 'These organisms swam across the Atlantic', 'Fossils move with ocean currents', 'The fossils are fake'], c: 0, e: 'The organisms could not have crossed the Atlantic, so the continents must have been joined.' },
+    { q: 'Besides coastline shape and fossils, what other evidence supports continental drift?', a: ['Matching rocks and mountain ranges on separated continents', 'Matching weather', 'The same languages', 'Satellite photos from 1900'], c: 0, e: 'Similar rocks and mountain belts line up across oceans.' },
+    { q: 'About when did the supercontinent Pangaea exist?', a: ['About 245 million years ago', 'About 65 million years ago', 'About 10,000 years ago', 'About 5 billion years ago'], c: 0, e: 'Pangaea ≈ 245 million years ago.' },
+    { q: 'What does "Pangaea" mean in Greek?', a: ['All Earth', 'All sea', 'Broken land', 'Moving rock'], c: 0, e: 'Pangaea = "all Earth". Panthalassa = "all sea".' },
+    { q: 'What was the huge sea surrounding Pangaea called?', a: ['Panthalassa', 'Atlantic', 'Gondwana', 'Laurasia'], c: 0, e: 'Panthalassa means "all sea".' },
+    { q: 'When did Pangaea begin to break apart?', a: ['About 200 million years ago', 'About 245 million years ago', 'About 65 million years ago', 'About 1 million years ago'], c: 0, e: 'Breakup began ~200 million years ago.' },
+    { q: 'Pangaea first separated into which two landmasses?', a: ['Laurasia and Gondwana', 'Asia and Africa', 'Panthalassa and Pangaea', 'North and South America'], c: 0, e: 'Laurasia (north) and Gondwana (south) — by about 135 million years ago.' },
+    { q: 'By about 65 million years ago, the continents...', a: ['Had split into several smaller continents that looked similar to today\'s', 'Were still one supercontinent', 'Were all underwater', 'Had joined into Laurasia only'], c: 0, e: 'By ~65 mya Laurasia and Gondwana had split into several continents similar to today.' },
+    { q: '65 million years ago, one difference from today was...', a: ['India was a separate island, not yet joined to Asia', 'Africa was attached to North America', 'Antarctica was at the equator', 'There was no Atlantic Ocean at all'], c: 0, e: 'India was still traveling north toward Asia, and the Atlantic was narrower.' },
+    { q: 'As the continents moved and some collided, what formed?', a: ['Mountain ranges and volcanoes', 'New oceans of lava', 'The inner core', 'Glaciers only'], c: 0, e: 'Collisions produced many landforms such as mountain ranges and volcanoes.' },
+    { q: 'What is a mid-ocean ridge?', a: ['A mountain chain on the ocean floor', 'A deep trench near continents', 'A beach ridge made of sand', 'A magnetic stripe'], c: 0, e: 'Mid-ocean ridges are underwater mountain chains — sites of intense volcanic activity.' },
+    { q: 'About how long is the chain of mid-ocean ridges?', a: ['50,000 km', '100 km', '2,900 km', '5 km'], c: 0, e: '≈50,000 km, wrapping around Earth like the seams on a baseball.' },
+    { q: 'Mid-ocean ridges wrap around Earth like...', a: ['The seams of a baseball', 'Rings of a tree', 'Layers of an onion', 'A belt'], c: 0, e: 'Like the seams of a baseball.' },
+    { q: 'What is sea-floor spreading?', a: ['Melted rock rises at a ridge, cools into new crust, and pushes older crust away', 'The ocean getting deeper from rain', 'Plates sinking into the mantle', 'Continents crashing together'], c: 0, e: 'New crust forms at mid-ocean ridges and pushes older crust away.' },
+    { q: 'In the 1960s, scientists found what on the ocean floor?', a: ['Magnetic patterns in the rocks', 'Dinosaur bones', 'The inner core', 'Gold deposits'], c: 0, e: 'Using magnetism-recording tools, they found magnetic patterns (stripes).' },
+    { q: 'How are the magnetic stripes on each side of a mid-ocean ridge related?', a: ['They are mirror images of each other', 'They are completely random', 'They only exist on one side', 'They get younger farther from the ridge'], c: 0, e: 'The pattern on one side mirrors the other side.' },
+    { q: 'What is a magnetic reversal?', a: ['When Earth\'s north and south magnetic poles switch places', 'When a compass breaks', 'When plates reverse direction', 'When the core stops spinning'], c: 0, e: 'The magnetic poles have switched places many times in Earth\'s history.' },
+    { q: 'During NORMAL polarity (like today), a compass needle points toward...', a: ['The North Pole', 'The South Pole', 'The equator', 'The mid-ocean ridge'], c: 0, e: 'Normal → north. Reverse → south.' },
+    { q: 'Magnetic minerals in new ocean crust act like tiny...', a: ['Compasses that line up with Earth\'s magnetic field and get stuck when the rock cools', 'Thermometers', 'Seismometers', 'Batteries'], c: 0, e: 'They line up with the field while molten; once cooled, their direction is locked in.' },
+    { q: 'Where is the OLDEST oceanic crust found?', a: ['Far from the mid-ocean ridge', 'Right at the mid-ocean ridge', 'Inside the ridge\'s magma', 'In the outer core'], c: 0, e: 'Youngest at the ridge, oldest far away — it\'s been pushed outward the longest.' },
+    { q: 'Which two processes together explain the magnetic stripes on the sea floor?', a: ['Sea-floor spreading and magnetic reversal', 'Erosion and weathering', 'Subduction and folding', 'Convection and glaciers'], c: 0, e: 'New crust records the current field; when the field flips, new stripes record the opposite direction.' },
+    { q: 'Looking at a world map, which landmass was likely once joined with Greenland?', a: ['North America — the coastlines fit together', 'Australia', 'Antarctica', 'South America'], c: 0, e: 'Greenland\'s shape fits against North America (and Europe) — like the puzzle-piece fit of Africa and South America.' },
+  ],
+  missions: []
+};
+
+/* ---- Mission 1: Wegener's Puzzle ---- */
+SECTIONS['7.2'].missions.push({
+  id: 'm72a', icon: '🧩', name: 'Wegener\'s Puzzle', xp: 70,
+  desc: 'Drag Africa across the Atlantic. Do the coastlines — and the fossils — match up?',
+  goal: '<b>Goal:</b> It\'s 1912. You notice South America\'s east coast and Africa\'s west coast look like puzzle pieces. <b>Drag Africa</b> toward South America and try to fit them. Watch what happens to the fossil and mountain clues!',
+  run(body, done) {
+    const C = [[0, 60], [28, 85], [55, 115], [62, 150], [48, 190], [28, 230], [10, 270], [-5, 300]];
+    const SA = C.concat([[-20, 340], [-40, 390], [-55, 430], [-75, 415], [-95, 350], [-120, 280], [-150, 200], [-165, 130], [-145, 75], [-100, 45], [-40, 48]]);
+    const AF = [[0, 60], [-35, 30], [-40, -10], [20, -40], [120, -45], [200, -20], [250, 40], [270, 110], [240, 170], [215, 240], [180, 310], [140, 370], [100, 400], [70, 380], [45, 340], [20, 315], [-5, 300]].concat(C.slice(0, -1).reverse());
+    const P = a => a.map(p => p.join(',')).join(' ');
+    const marks = [
+      { y: 112, sa: -25, af: 92, ic: '⛰️', n: 'Old mountain belt (same rock type)' },
+      { y: 198, sa: 2, af: 88, ic: '🦎', n: 'Mesosaurus fossils (a freshwater reptile)' },
+      { y: 262, sa: -28, af: 62, ic: '🌿', n: 'Glossopteris fossils (a seed fern)' },
+    ];
+    const wrap = el('div'); body.appendChild(wrap);
+    wrap.innerHTML = `<svg class="sim" id="pz" viewBox="0 0 900 540" style="background:linear-gradient(#0b3a5c,#082a44)">
+      <text x="560" y="300" fill="#7fb3d5" font-size="22" font-weight="bold" id="atl" text-anchor="middle">ATLANTIC OCEAN</text>
+      <g id="sa" transform="translate(300,70)"><polygon points="${P(SA)}" fill="#7cae5a" stroke="#e8f1fb" stroke-width="2"/><text x="-80" y="240" fill="#fff" font-weight="bold" text-anchor="middle">SOUTH</text><text x="-80" y="260" fill="#fff" font-weight="bold" text-anchor="middle">AMERICA</text>
+        ${marks.map(m => `<text x="${m.sa}" y="${m.y + 6}" font-size="20" text-anchor="middle">${m.ic}</text>`).join('')}</g>
+      <g id="af" transform="translate(600,70)" style="cursor:grab"><polygon points="${P(AF)}" fill="#d4a55a" stroke="#e8f1fb" stroke-width="2"/><text x="150" y="120" fill="#fff" font-weight="bold" text-anchor="middle">AFRICA</text><text x="150" y="140" fill="#fff" font-size="12" text-anchor="middle">(drag me!)</text>
+        ${marks.map(m => `<text x="${m.af}" y="${m.y + 6}" font-size="20" text-anchor="middle">${m.ic}</text>`).join('')}</g>
+      <g id="bands" opacity="0" pointer-events="none"></g>
+    </svg>
+    <div class="legend">⛰️ = matching mountain belt &nbsp; 🦎 = Mesosaurus fossils &nbsp; 🌿 = Glossopteris fossils</div>`;
+    const ro = el('div', { class: 'readout', style: 'margin-top:10px' }, '<h4>📒 Wegener\'s notebook</h4>The same fossils show up on BOTH continents... but how could a small reptile cross an entire ocean?'); body.appendChild(ro);
+    const svg = $('#pz'), af = $('#af'); let ax = 600, ay = 70, drag = null, fitted = false;
+    const pt = e => { const p = svg.createSVGPoint(); const s = e.touches ? e.touches[0] : e; p.x = s.clientX; p.y = s.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); };
+    af.addEventListener('pointerdown', e => { if (fitted) return; const p = pt(e); drag = { dx: p.x - ax, dy: p.y - ay }; af.setPointerCapture(e.pointerId); });
+    af.addEventListener('pointermove', e => { if (!drag) return; const p = pt(e); ax = clamp(p.x - drag.dx, 280, 640); ay = clamp(p.y - drag.dy, 20, 140); af.setAttribute('transform', `translate(${ax},${ay})`); const d = Math.hypot(ax - 300, ay - 70); $('#atl').setAttribute('opacity', clamp((ax - 320) / 200, 0, 1)); ro.innerHTML = `<h4>📒 Wegener's notebook</h4>Distance to a perfect fit: <b>${Math.round(d)}</b> units ${d < 60 ? '— so close! 🔥' : ''}`; });
+    af.addEventListener('pointerup', () => { if (!drag) return; drag = null; if (Math.hypot(ax - 300, ay - 70) < 28) snap(); });
+    function snap() {
+      fitted = true; ax = 300; ay = 70; af.style.transition = 'transform .4s'; af.setAttribute('transform', 'translate(300,70)'); af.style.cursor = 'default';
+      const b = $('#bands'); b.innerHTML = marks.map(m => `<rect x="${300 - 60}" y="${70 + m.y - 16}" width="190" height="32" rx="10" fill="none" stroke="#ffb703" stroke-width="3" stroke-dasharray="7 4"/><text x="${300 + 140}" y="${70 + m.y + 5}" fill="#ffe08a" font-size="14" font-weight="bold" stroke="#000" stroke-width="4" paint-order="stroke" stroke-linejoin="round">${m.n}</text>`).join('');
+      b.style.transition = 'opacity 1s'; setTimeout(() => b.setAttribute('opacity', 1), 300);
+      ro.innerHTML = '<h4>🎉 PERFECT FIT!</h4>The coastlines lock together — AND the fossils and mountain belts line up across the seam! This is the evidence for <b>continental drift</b>: the continents were once one landmass that broke apart and drifted.';
+      discover('Fossil evidence'); discover('Alfred Wegener'); toast('🧩 Evidence found: matching fossils & rocks!');
+      checkpoint(body, 'Discovery Check', [
+        { q: 'Why do South America and Africa seem to fit together?', a: ['They were once part of a single continent that broke apart', 'Rivers carved them into matching shapes', 'It\'s just a coincidence', 'Ocean currents pushed them into shape'], c: 0, e: 'They were joined, then broke apart and moved.' },
+        { q: 'Mesosaurus fossils appear on both sides of the Atlantic. Why is this strong evidence?', a: ['The organisms could not have traveled across the Atlantic Ocean', 'Mesosaurus was a great swimmer', 'Fossils float', 'Birds carried the fossils'], c: 0, e: 'If they couldn\'t cross the ocean, the land must once have been connected.' },
+        { q: 'Who proposed the hypothesis of continental drift, and when?', a: ['Alfred Wegener, early 1900s', 'Isaac Newton, 1600s', 'Scientists in the 1960s', 'Charles Darwin, 1850s'], c: 0, e: 'Wegener, a German scientist, early 1900s.', term: 'Continental drift' },
+      ], done);
+    }
+  }
+});
+
+/* ---- Mission 2: Time Machine ---- */
+SECTIONS['7.2'].missions.push({
+  id: 'm72b', icon: '⏳', name: 'Deep-Time Machine', xp: 70,
+  desc: 'Travel 245 million years and watch Pangaea break apart into today\'s continents.',
+  goal: '<b>Goal:</b> Drag the time slider (or press ▶ Play) and visit all <b>5 time stops</b>: 245, 200, 135 and 65 million years ago, and today. Read each observation report.',
+  run(body, done) {
+    const Cv = mkCanvas(body, 800, 430), ctx = Cv.ctx;
+    const ctr = el('div', { class: 'ctrls' }); body.appendChild(ctr);
+    const sl = el('input', { type: 'range', min: 0, max: 245, value: 245, class: 'slider', style: 'flex:1' });
+    const play = el('button', { class: 'btn go' }, '▶ Play');
+    const lab = el('span', { class: 'pill' }, '245 mya'); ctr.append(play, sl, lab);
+    const stops = el('div', { class: 'ctrls' }); body.appendChild(stops);
+    const ro = el('div', { class: 'readout' }); body.appendChild(ro);
+    const chk = el('div'); body.appendChild(chk);
+    const names = ['North America', 'Eurasia', 'South America', 'Africa', 'India', 'Australia', 'Antarctica'];
+    const grp = ['L', 'L', 'G', 'G', 'G', 'G', 'G'];
+    const size = [[70, 50], [115, 48], [40, 58], [55, 65], [20, 24], [40, 28], [70, 24]];
+    const col = ['#8bc34a', '#9ccc65', '#d4a55a', '#e0b56a', '#ffb74d', '#ff8a65', '#e0e0e0'];
+    const K = {
+      245: [[.44, .38], [.55, .36], [.45, .56], [.53, .53], [.585, .6], [.6, .68], [.52, .7]],
+      200: [[.42, .36], [.555, .34], [.44, .58], [.525, .55], [.59, .64], [.61, .74], [.52, .74]],
+      135: [[.37, .3], [.56, .26], [.4, .62], [.5, .58], [.59, .7], [.62, .83], [.52, .84]],
+      65: [[.27, .29], [.58, .26], [.33, .64], [.5, .56], [.64, .6], [.75, .8], [.55, .9]],
+      0: [[.21, .29], [.6, .27], [.3, .65], [.52, .55], [.68, .46], [.82, .7], [.55, .92]],
+    };
+    const keys = [245, 200, 135, 65, 0];
+    const info = {
+      245: ['PANGAEA', 'All the continents are joined into one <b>supercontinent</b> called <b>Pangaea</b> ("all Earth"). It is surrounded by a huge sea called <b>Panthalassa</b> ("all sea").', ['Pangaea', 'Panthalassa', 'Supercontinent']],
+      200: ['BREAKUP BEGINS', 'About <b>200 million years ago</b>, Pangaea begins breaking apart. Cracks open between the land pieces.', []],
+      135: ['LAURASIA & GONDWANA', 'Pangaea has split into two smaller continents: <b>Laurasia</b> in the north and <b>Gondwana</b> in the south.', ['Laurasia', 'Gondwana']],
+      65: ['MANY CONTINENTS', 'Laurasia and Gondwana have split into several smaller continents that look similar to today\'s. But notice: <b>India is still an island</b> and the Atlantic is narrower!', []],
+      0: ['TODAY', 'The continents are still moving — slowly! As they moved, some <b>collided</b> and formed mountain ranges and volcanoes (India crashing into Asia built the Himalayas).', []],
+    };
+    const visited = {}; let playing = false, unlocked = false;
+    play.onclick = () => { playing = !playing; play.textContent = playing ? '⏸ Pause' : '▶ Play'; if (playing && +sl.value === 0) sl.value = 245; };
+    keys.forEach(k => { const b = el('button', { class: 'btn' }, k ? k + ' mya' : 'Today'); b.onclick = () => { sl.value = k; playing = false; play.textContent = '▶ Play'; }; b.dataset.k = k; stops.appendChild(b); });
+    function posAt(m) {
+      let a = 0; while (a < keys.length - 1 && !(m <= keys[a] && m >= keys[a + 1])) a++;
+      const k1 = keys[a], k2 = keys[a + 1]; const t = ease((k1 - m) / (k1 - k2));
+      return K[k1].map((p, i) => [lerp(p[0], K[k2][i][0], t), lerp(p[1], K[k2][i][1], t)]);
+    }
+    function blob(x, y, rx, ry, seed, fill) { ctx.beginPath(); for (let i = 0; i <= 20; i++) { const a = i / 20 * Math.PI * 2; const w = 1 + .13 * Math.sin(a * 3 + seed) + .08 * Math.sin(a * 5 + seed * 2); const px = x + Math.cos(a) * rx * w, py = y + Math.sin(a) * ry * w; i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); } ctx.closePath(); ctx.fillStyle = fill; ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,.5)'; ctx.lineWidth = 1.5; ctx.stroke(); }
+    loop(dt => {
+      let m = +sl.value; if (playing) { m = Math.max(0, m - dt * 30); sl.value = m; if (m <= 0) { playing = false; play.textContent = '▶ Play'; } }
+      lab.textContent = m < 1 ? 'Today' : Math.round(m) + ' million years ago';
+      ctx.clearRect(0, 0, 800, 430);
+      ctx.save(); ctx.beginPath(); ctx.ellipse(400, 215, 380, 200, 0, 0, 7); ctx.fillStyle = '#0d4a75'; ctx.fill(); ctx.clip();
+      const pos = posAt(m); const near = keys.find(k => Math.abs(k - m) < 6);
+      pos.forEach((p, i) => { const x = 40 + p[0] * 720, y = 20 + p[1] * 380; let f = col[i]; if (m > 190) f = '#7cae5a'; else if (m > 100 && m < 170) f = grp[i] === 'L' ? '#7cae5a' : '#d4a55a'; blob(x, y, size[i][0], size[i][1], i * 1.7, f); });
+      if (m < 100 || m > 230 && false) pos.forEach((p, i) => txt(ctx, names[i], 40 + p[0] * 720, 20 + p[1] * 380, { size: 12, stroke: '#0008' }));
+      if (m >= 190) { txt(ctx, 'PANGAEA', 400, 200, { size: 30, stroke: '#0009' }); txt(ctx, 'PANTHALASSA', 150, 340, { size: 18, c: '#9fd3ff' }); }
+      else if (m >= 100) { txt(ctx, 'LAURASIA', 360, 95, { size: 22, stroke: '#0009' }); txt(ctx, 'GONDWANA', 420, 300, { size: 22, stroke: '#0009' }); }
+      ctx.restore();
+      ctx.beginPath(); ctx.ellipse(400, 215, 380, 200, 0, 0, 7); ctx.strokeStyle = '#4cc9f0'; ctx.lineWidth = 3; ctx.stroke();
+      if (near != null) {
+        stops.querySelectorAll('.btn').forEach(b => b.classList.toggle('on', +b.dataset.k === near));
+        if (!visited[near]) { visited[near] = true; info[near][2].forEach(discover); toast('⏳ Time stop logged: ' + (near ? near + ' mya' : 'Today')); }
+        if (ro.dataset.k != near) { ro.dataset.k = near; ro.innerHTML = `<h4>${near ? near + ' million years ago' : 'Present day'} — ${info[near][0]}</h4>${info[near][1]}<br><span class="mono">Time stops visited: ${Object.keys(visited).length}/5</span>`; }
+        if (Object.keys(visited).length === 5 && !unlocked) { unlocked = true; unlock(); }
+      }
+    });
+    ro.innerHTML = '<h4>Time machine ready</h4>Press ▶ Play or drag the slider.';
+    function unlock() {
+      checkpoint(chk, 'Discovery Check', [
+        { q: 'About when did Pangaea begin to break apart?', a: ['200 million years ago', '245 million years ago', '65 million years ago', '1 million years ago'], c: 0, e: 'Pangaea existed ~245 mya and began breaking up ~200 mya.' },
+        { q: 'What two landmasses did Pangaea first split into?', a: ['Laurasia and Gondwana', 'Panthalassa and Pangaea', 'Eurasia and Africa', 'North and South America'], c: 0, e: 'Laurasia (north) and Gondwana (south).' },
+        { q: '"Pangaea" means ______ and "Panthalassa" means ______.', a: ['all Earth; all sea', 'all sea; all Earth', 'big land; deep sea', 'broken land; old sea'], c: 0, e: 'Greek: Pangaea = all Earth, Panthalassa = all sea.' },
+        { q: 'Give one way the continents 65 million years ago were different from today.', a: ['India was a separate island not yet joined to Asia', 'All continents were still one landmass', 'Africa and South America were touching', 'There were only two continents'], c: 0, e: 'India hadn\'t reached Asia yet, and the Atlantic was narrower.' },
+      ], done);
+    }
+  }
+});
+
+/* ---- Mission 3: Ocean-Floor Magnetometer ---- */
+SECTIONS['7.2'].missions.push({
+  id: 'm72c', icon: '🧲', name: 'Ocean-Floor Magnetometer', xp: 80,
+  desc: 'It\'s the 1960s. Map the mysterious magnetic stripes at a mid-ocean ridge.',
+  goal: '<b>Goal:</b> Watch new crust form at the mid-ocean ridge (<b>sea-floor spreading</b>). Press <b>⚡ Reverse the field</b> at least 3 times to see how stripes form. Then test your detective skills: click the <b>youngest</b> and the <b>oldest</b> rock.',
+  run(body, done) {
+    const Cv = mkCanvas(body, 800, 380), ctx = Cv.ctx;
+    const ctr = el('div', { class: 'ctrls' }); body.appendChild(ctr);
+    const bRev = el('button', { class: 'btn go' }, '⚡ Reverse Earth\'s magnetic field');
+    const bAuto = el('button', { class: 'btn' }, '🎲 Auto-reversals: OFF');
+    const bPause = el('button', { class: 'btn' }, '⏸ Pause spreading');
+    ctr.append(bRev, bAuto, bPause);
+    const ro = el('div', { class: 'readout' }); body.appendChild(ro);
+    const chk = el('div'); body.appendChild(chk);
+    let pol = 1, strips = [], acc = 0, revs = 0, auto = false, paused = false, nextAuto = 3, task = 0, unlocked = false, t = 0;
+    const W = 8, cx = 400;
+    bRev.onclick = () => { pol *= -1; revs++; discover('Magnetic reversal'); toast(pol > 0 ? '🧭 Field is NORMAL again (needle → North)' : '🧭 MAGNETIC REVERSAL! (needle → South)'); upd(); };
+    bAuto.onclick = () => { auto = !auto; bAuto.textContent = '🎲 Auto-reversals: ' + (auto ? 'ON' : 'OFF'); bAuto.classList.toggle('on', auto); };
+    bPause.onclick = () => { paused = !paused; bPause.textContent = paused ? '▶ Resume spreading' : '⏸ Pause spreading'; };
+    function upd() {
+      const msgs = ['Let the sea floor spread and reverse the field at least <b>3 times</b>.', '<b>DETECTIVE TASK 1:</b> Click the <b>YOUNGEST</b> rock on the sea floor.', '<b>DETECTIVE TASK 2:</b> Click the <b>OLDEST</b> rock on the sea floor.', 'Detective work complete! ✅'];
+      ro.innerHTML = `<h4>🧲 Magnetometer readout</h4>Current field: <b style="color:${pol > 0 ? '#4cc9f0' : '#ffb703'}">${pol > 0 ? 'NORMAL polarity' : 'REVERSED polarity'}</b> · Reversals: <b>${revs}</b> · Stripes recorded: <b>${strips.length}</b><br>${msgs[task]}`;
+      if (task === 0 && revs >= 3 && strips.length >= 30) { task = 1; discover('Sea-floor spreading'); discover('Mid-ocean ridge'); upd(); }
+    }
+    Cv.cv.onclick = e => {
+      const p = Cv.pos(e); if (p.y < 170 || p.y > 290) { if (task === 1 || task === 2) toast('Click ON the sea floor (the striped band).'); return; }
+      const d = Math.abs(p.x - cx);
+      if (task === 1) { if (d < 22) { task = 2; paused = true; bPause.textContent = '▶ Resume spreading'; toast('✅ Right! The youngest rock is AT the ridge — it just formed.'); } else toast('❌ Think: where is NEW rock being made?'); upd(); }
+      else if (task === 2) { const maxd = strips.length * W; if (d > maxd - 60 && d < maxd + 4) { task = 3; toast('✅ Yes! The oldest rock is FARTHEST from the ridge.'); upd(); if (!unlocked) { unlocked = true; unlock(); } } else toast('❌ Old rock has been pushed away the longest...'); upd(); }
+    };
+    upd();
+    loop(dt => {
+      t += dt;
+      if (!paused) { acc += dt; if (acc > .28) { acc = 0; strips.unshift(pol); if (strips.length > 48) strips.pop(); upd(); } if (auto) { nextAuto -= dt; if (nextAuto <= 0) { nextAuto = 1.5 + Math.random() * 3.5; bRev.onclick(); } } }
+      ctx.clearRect(0, 0, 800, 380);
+      const sky = ctx.createLinearGradient(0, 0, 0, 180); sky.addColorStop(0, '#0a3d62'); sky.addColorStop(1, '#062a45'); ctx.fillStyle = sky; ctx.fillRect(0, 0, 800, 180);
+      txt(ctx, 'OCEAN', 120, 40, { c: '#7fb3d5', size: 16 });
+      // mantle
+      ctx.fillStyle = '#7a2e12'; ctx.fillRect(0, 290, 800, 90); txt(ctx, 'MANTLE (melted rock rises here)', 400, 360, { c: '#ffc9a8', size: 13 });
+      // strips
+      for (let k = 0; k < strips.length; k++) {
+        const c = strips[k] > 0 ? '#2b4f7a' : '#d9d2b8';
+        const off = k * W + (paused ? 0 : acc / .28 * W);
+        const h = 6 + Math.max(0, 40 - k * 1.2); // ridge is higher (hot)
+        [1, -1].forEach(sg => { const x = cx + sg * off; ctx.fillStyle = c; ctx.fillRect(sg > 0 ? x : x - W, 230 - h, W, 60 + h); if (k % 3 === 1) txt(ctx, strips[k] > 0 ? '↑' : '↓', x + (sg > 0 ? W / 2 : -W / 2), 260, { c: strips[k] > 0 ? '#9fd3ff' : '#7a5a00', size: 12 }); });
+      }
+      // magma at ridge
+      ctx.fillStyle = '#ff6b2b'; ctx.beginPath(); ctx.moveTo(cx - 10, 290); ctx.lineTo(cx, 180); ctx.lineTo(cx + 10, 290); ctx.fill();
+      for (let i = 0; i < 6; i++) { const yy = 290 - ((t * 60 + i * 20) % 110); ctx.beginPath(); ctx.arc(cx + Math.sin(t * 5 + i) * 4, yy, 3, 0, 7); ctx.fillStyle = '#ffd166'; ctx.fill(); }
+      txt(ctx, 'MID-OCEAN RIDGE', cx, 150, { c: '#ffb703', size: 14, stroke: '#0008' });
+      if (!paused) { txt(ctx, '◀ older', 80, 205, { c: '#fff', size: 13 }); txt(ctx, 'older ▶', 720, 205, { c: '#fff', size: 13 }); }
+      // compass
+      ctx.save(); ctx.translate(720, 70); ctx.beginPath(); ctx.arc(0, 0, 40, 0, 7); ctx.fillStyle = '#e8f1fb'; ctx.fill(); ctx.strokeStyle = '#333'; ctx.lineWidth = 3; ctx.stroke();
+      txt(ctx, 'N', 0, -28, { c: '#c00', size: 12 }); txt(ctx, 'S', 0, 29, { c: '#333', size: 12 });
+      ctx.rotate(pol > 0 ? 0 : Math.PI); ctx.beginPath(); ctx.moveTo(0, -30); ctx.lineTo(6, 0); ctx.lineTo(-6, 0); ctx.fillStyle = '#e63946'; ctx.fill(); ctx.beginPath(); ctx.moveTo(0, 30); ctx.lineTo(6, 0); ctx.lineTo(-6, 0); ctx.fillStyle = '#555'; ctx.fill(); ctx.restore();
+      txt(ctx, pol > 0 ? 'NORMAL' : 'REVERSED', 720, 128, { c: pol > 0 ? '#4cc9f0' : '#ffb703', size: 13 });
+      ctx.fillStyle = '#2b4f7a'; ctx.fillRect(20, 305, 14, 14); txt(ctx, 'normal polarity rock', 40, 312, { align: 'left', size: 12, c: '#fff', b: false });
+      ctx.fillStyle = '#d9d2b8'; ctx.fillRect(20, 325, 14, 14); txt(ctx, 'reversed polarity rock', 40, 332, { align: 'left', size: 12, c: '#fff', b: false });
+    });
+    function unlock() {
+      checkpoint(chk, 'Discovery Check', [
+        { q: 'How are the magnetic stripes on one side of the ridge related to the other side?', a: ['They are a mirror image', 'They are opposite colors', 'They are random', 'Only one side has stripes'], c: 0, e: 'New crust forms at the ridge and moves out BOTH ways, so the stripes are mirror images.' },
+        { q: 'What is a magnetic reversal?', a: ['Earth\'s north and south magnetic poles switch places', 'The plates change direction', 'Lava flows backward', 'A compass stops working'], c: 0, e: 'This has happened many times in Earth\'s history.', term: 'Reverse polarity' },
+        { q: 'Why do ocean rocks "remember" the magnetic field?', a: ['Magnetic minerals line up with the field like compasses, then get stuck in place when the rock cools', 'Ocean water magnetizes them', 'Fish leave magnetic trails', 'The core pulls on them'], c: 0, e: 'Minerals align while melted; once cool, the direction is locked in.', term: 'Normal polarity' },
+        { q: 'Mid-ocean ridges form a chain about how long?', a: ['50,000 km — wrapping Earth like baseball seams', '500 km', '2,900 km', '100 km'], c: 0, e: '≈50,000 km — and they are sites of intense volcanic activity.' },
+      ], done);
+    }
+  }
+});
+/* ================= 7.3 THE THEORY OF PLATE TECTONICS ================= */
+SECTIONS['7.3'] = {
+  title: 'Plate Tectonics', avatar: '🌋',
+  log: '> LAB LOG · 1960s · Sea-floor spreading + magnetic reversals... time to build a new THEORY.',
+  brief: 'Earth\'s lithosphere is broken into plates that slowly move. Run the Boundary Simulator to discover what happens when plates pull apart, crash together, or slide past — then figure out WHAT moves them.',
+  vocab: [
+    ['Plate tectonics', 'Theory that the lithosphere is broken into plates that move slowly over the asthenosphere'],
+    ['Boundary', 'A place where tectonic plates meet'],
+    ['Divergent boundary', 'Plates move APART; mid-ocean ridges and new lithosphere form'],
+    ['Convergent boundary', 'Plates move TOGETHER; mountains, subduction, volcanoes, island arcs'],
+    ['Transform boundary', 'Plates SLIDE PAST each other horizontally'],
+    ['Subduction', 'Denser oceanic lithosphere sinks beneath another plate'],
+    ['Island arc', 'Chain of volcanic islands formed at an ocean-ocean convergent boundary'],
+    ['Segments', 'Pieces of a mid-ocean ridge separated by transform boundaries'],
+    ['San Andreas fault', 'Transform boundary in California: Pacific & North American plates slide past'],
+    ['Convection', 'When matter carries heat from one place to another'],
+    ['Convection currents', 'Rising hot material + sinking cold material in the mantle'],
+    ['Slab pull', 'Cold, dense lithosphere sinking at a subduction zone pulls the rest of the plate'],
+    ['Ridge push', 'Gravity pulls new, high lithosphere down and away from a mid-ocean ridge'],
+    ['GPS', 'Global positioning system — detects plate motion of a few cm per year'],
+  ],
+  quiz: [
+    { q: 'What does the theory of plate tectonics state?', a: ['Earth\'s lithosphere is broken into plates that move slowly over the asthenosphere', 'Continents float on the ocean', 'Earth\'s core is moving outward', 'The crust never changes'], c: 0, e: 'Lithosphere → broken into tectonic plates → move slowly over the asthenosphere.' },
+    { q: 'The theory of plate tectonics grew from learning about...', a: ['Sea-floor spreading and magnetic reversals', 'Weather and climate', 'The Moon\'s orbit', 'Dinosaurs'], c: 0, e: 'Sea-floor spreading + magnetic reversals → the plate tectonics theory.' },
+    { q: 'How fast do tectonic plates move?', a: ['Only a few centimeters per year', 'A few kilometers per day', 'About 100 km per year', 'They don\'t move'], c: 0, e: 'Very slowly — a few cm per year.' },
+    { q: 'How do scientists detect the slow movement of plates?', a: ['Global positioning systems (GPS)', 'Thermometers', 'Seismometers only', 'Looking at the plates with telescopes'], c: 0, e: 'GPS is sensitive enough to detect small changes in a continent\'s location.' },
+    { q: 'What is a plate boundary?', a: ['A place where tectonic plates meet', 'The center of a plate', 'The border between countries', 'The bottom of the mantle'], c: 0, e: 'Boundaries are where plates meet.' },
+    { q: 'Which features are MORE COMMON at plate boundaries?', a: ['Earthquakes and volcanoes', 'Deserts and rivers', 'Glaciers and lakes', 'Forests'], c: 0, e: 'Earthquakes and volcanoes are more common at boundaries.' },
+    { q: 'Which features form ONLY at plate boundaries?', a: ['Mid-ocean ridges and ocean trenches', 'Rivers and lakes', 'Glaciers', 'Sand dunes'], c: 0, e: 'Mid-ocean ridges and ocean trenches form only at boundaries.' },
+    { q: 'What are the three types of plate boundaries?', a: ['Divergent, convergent, transform', 'Normal, reverse, strike-slip', 'Folded, fault-block, volcanic', 'Crust, mantle, core'], c: 0, e: 'Divergent (apart), convergent (together), transform (slide past).' },
+    { q: 'At a DIVERGENT boundary, plates...', a: ['Move apart', 'Move together', 'Slide past each other', 'Stay still'], c: 0, e: 'Divergent = apart.' },
+    { q: 'Most divergent boundaries are found...', a: ['Beneath the oceans, at mid-ocean ridges', 'In the middle of continents', 'At the North Pole', 'In the inner core'], c: 0, e: 'Mid-ocean ridges form at divergent boundaries.' },
+    { q: 'At a divergent boundary, melted rock rises through cracks, cools and hardens to form...', a: ['New lithosphere', 'An island arc', 'A trench', 'The outer core'], c: 0, e: 'New lithosphere is created at divergent boundaries.' },
+    { q: 'At a CONVERGENT boundary, plates...', a: ['Move together', 'Move apart', 'Slide past each other horizontally', 'Melt completely'], c: 0, e: 'Convergent = together (collide).' },
+    { q: 'What forms at a continent-continent convergent boundary?', a: ['Very tall mountain ranges, like the Himalayas', 'Island arcs', 'Mid-ocean ridges', 'Rift valleys'], c: 0, e: 'Continental lithosphere buckles and thickens → tall mountains.' },
+    { q: 'Why do continent-continent collisions make VERY tall mountains?', a: ['Neither plate sinks easily, so the crust buckles and thickens', 'Volcanoes erupt nonstop', 'Ocean water piles up', 'The plates pull apart'], c: 0, e: 'Both continents are thick and less dense, so they crumple upward instead of subducting.' },
+    { q: 'At a continent-ocean boundary, which plate sinks (subducts)?', a: ['The denser oceanic lithosphere', 'The continental lithosphere', 'Neither', 'Both'], c: 0, e: 'Denser oceanic lithosphere sinks under the continental lithosphere.' },
+    { q: 'What is subduction?', a: ['When one plate sinks beneath another plate', 'When plates slide past each other', 'When new crust forms at a ridge', 'When glaciers push the crust down'], c: 0, e: 'Denser lithosphere sinks under the other plate.' },
+    { q: 'Which mountains formed at a continent-ocean convergent boundary?', a: ['The Andes', 'The Himalayas', 'The Appalachians', 'The Mid-Atlantic Ridge'], c: 0, e: 'The Andes formed where the Nazca plate subducts under South America.' },
+    { q: 'What forms at an OCEAN-OCEAN convergent boundary?', a: ['An island arc (chain of volcanic islands)', 'A tall continental mountain range', 'A rift valley', 'A transform fault'], c: 0, e: 'One oceanic plate subducts and a chain of volcanic islands — an island arc — forms.' },
+    { q: 'At a TRANSFORM boundary, plates...', a: ['Slide past each other horizontally', 'Move apart', 'Collide head-on', 'Sink into the core'], c: 0, e: 'Transform = slide past.' },
+    { q: 'Most transform boundaries are found...', a: ['Near mid-ocean ridges, separating ridge segments', 'Inside the outer core', 'In the middle of plates', 'Only in Asia'], c: 0, e: 'Ridges are broken into segments; transform boundaries separate them.' },
+    { q: 'The San Andreas fault is a transform boundary between which plates?', a: ['Pacific and North American', 'Nazca and South American', 'Indian and Eurasian', 'African and South American'], c: 0, e: 'Pacific and North American plates slide past each other in California.' },
+    { q: 'What are the three main hypotheses for why plates move?', a: ['Convection, slab pull, ridge push', 'Wind, tides, rain', 'Gravity, magnetism, light', 'Folding, faulting, volcanism'], c: 0, e: 'Convection currents, slab pull, and ridge push.' },
+    { q: 'What is convection?', a: ['When matter carries heat from one place to another', 'When rocks bend under stress', 'When the magnetic field flips', 'When ice melts'], c: 0, e: 'Hot mantle rock expands, becomes less dense, rises; cold dense material sinks.' },
+    { q: 'Until the 1990s, many scientists thought the main force moving plates was...', a: ['Convection currents', 'Slab pull', 'Ridge push', 'Earth\'s rotation'], c: 0, e: 'Older idea: convection currents pulled plates.' },
+    { q: 'Today, most scientists think the MAIN force moving plates is...', a: ['Slab pull', 'Convection currents', 'Ridge push', 'Earthquakes'], c: 0, e: 'Slab pull is now thought to be the main force.' },
+    { q: 'In slab pull, the edge of a plate sinks into the mantle because it is...', a: ['Colder and denser than the mantle', 'Hotter and lighter than the mantle', 'Made of liquid iron', 'Pushed by water'], c: 0, e: 'Cold, dense lithosphere sinks and pulls the plate along.' },
+    { q: 'What happens in ridge push?', a: ['New, warm lithosphere sits higher at the ridge, and gravity pulls it down and away from the ridge', 'Cold lithosphere sinks at a trench', 'Glaciers push plates', 'Mountains push plates apart'], c: 0, e: 'Warm, less-dense new lithosphere floats higher; gravity slides the plate away.' },
+    { q: 'How is slab pull different from ridge push?', a: ['Slab pull pulls from the sinking edge at a subduction zone; ridge push pushes from the high ridge where new crust forms', 'They are exactly the same', 'Slab pull happens at ridges; ridge push at trenches', 'Ridge push only happens on land'], c: 0, e: 'Pull at the subduction end vs. push/slide at the ridge end.' },
+    { q: 'Which boundary would you expect at the Mid-Atlantic Ridge?', a: ['Divergent', 'Convergent', 'Transform', 'None'], c: 0, e: 'Mid-ocean ridge = plates moving apart = divergent.' },
+  ],
+  missions: []
+};
+
+/* ---- Mission 1: Boundary Simulator ---- */
+SECTIONS['7.3'].missions.push({
+  id: 'm73a', icon: '💥', name: 'Plate Boundary Simulator', xp: 100,
+  desc: 'Choose two plates and a direction. Predict, run, and discover all 6 outcomes.',
+  goal: '<b>Goal:</b> Pick the plate types and how they move, make a <b>prediction</b> (bonus XP if correct!), then press <b>RUN</b>. Discover all <b>6 outcomes</b> to complete the mission.',
+  run(body, done) {
+    const OUT = {
+      divO: { n: 'Mid-ocean ridge & new sea floor', type: 'DIVERGENT', d: 'Plates move <b>apart</b>. Cracks form, melted rock rises, cools and hardens into <b>new lithosphere</b>. A <b>mid-ocean ridge</b> forms (e.g. Mid-Atlantic Ridge). Most divergent boundaries are beneath the oceans.', terms: ['Divergent boundary'] },
+      divC: { n: 'Rift valley splitting a continent', type: 'DIVERGENT', d: 'A continent is pulled <b>apart</b>. The crust stretches (tension), breaks along normal faults and sinks, forming a <b>rift zone</b>. Given time, a new ocean can open here!', terms: ['Divergent boundary'] },
+      cc: { n: 'Tall mountain range (like the Himalayas)', type: 'CONVERGENT · continent–continent', d: 'Two continents <b>collide</b>. Neither is dense enough to sink, so the lithosphere <b>buckles and thickens</b> → very tall mountains like the <b>Himalayas</b>.', terms: ['Convergent boundary'] },
+      oc: { n: 'Subduction + volcanic mountains (like the Andes)', type: 'CONVERGENT · continent–ocean', d: 'The <b>denser oceanic</b> lithosphere sinks under the continental lithosphere — <b>subduction</b>. A deep trench forms and a chain of volcanic mountains rises, like the <b>Andes</b>.', terms: ['Subduction', 'Convergent boundary'] },
+      oo: { n: 'Subduction + volcanic island arc', type: 'CONVERGENT · ocean–ocean', d: 'Two oceanic plates collide. One <b>subducts</b> beneath the other, and a chain of volcanic islands called an <b>island arc</b> forms on the upper plate.', terms: ['Island arc', 'Subduction'] },
+      tr: { n: 'Plates grind past: earthquakes (like San Andreas)', type: 'TRANSFORM', d: 'Plates <b>slide past each other horizontally</b>. No crust is made or destroyed, but stress builds and releases as <b>earthquakes</b>. Example: the <b>San Andreas fault</b> (Pacific & North American plates). Most transform boundaries separate <b>segments</b> of mid-ocean ridges.', terms: ['Transform boundary', 'San Andreas fault', 'Segments'] },
+    };
+    let L = 'O', R = 'C', mv = 'together', pred = null, t = 0, running = false, key = null; const found = {};
+    const row = el('div', { class: 'row' }); body.appendChild(row);
+    const c1 = el('div', { class: 'col', style: 'flex:1.7' }), c2 = el('div', { class: 'col' }); row.append(c1, c2);
+    const Cv = mkCanvas(c1, 800, 420), ctx = Cv.ctx;
+    const mk = (label, opts, get, set) => { const d = el('div', { class: 'ctrls' }, `<b style="min-width:90px">${label}</b>`); opts.forEach(o => { const b = el('button', { class: 'btn' + (get() === o[0] ? ' on' : '') }, o[1]); b.onclick = () => { set(o[0]); d.querySelectorAll('.btn').forEach(x => x.classList.remove('on')); b.classList.add('on'); running = false; t = 0; key = null; }; d.appendChild(b); }); c2.appendChild(d); };
+    mk('Left plate', [['O', '🌊 Oceanic'], ['C', '🏔️ Continental']], () => L, v => L = v);
+    mk('Right plate', [['O', '🌊 Oceanic'], ['C', '🏔️ Continental']], () => R, v => R = v);
+    mk('Motion', [['apart', '⬅️ ➡️ Apart'], ['together', '➡️ ⬅️ Together'], ['slide', '⬆️⬇️ Slide past']], () => mv, v => mv = v);
+    const pd = el('div', {}, '<b>Your prediction:</b>'); c2.appendChild(pd);
+    const sel = el('select', { style: 'width:100%;padding:8px;border-radius:8px;background:#0a1320;color:#e8f1fb;border:1px solid #2a4a6e;margin:6px 0' }); sel.innerHTML = '<option value="">— skip prediction —</option>' + Object.keys(OUT).map(k => `<option value="${k}">${OUT[k].n}</option>`).join(''); pd.appendChild(sel);
+    const run = el('button', { class: 'btn go', style: 'width:100%;font-size:16px' }, '▶ RUN SIMULATION'); c2.appendChild(run);
+    const prog = el('div', { class: 'hint', style: 'margin-top:8px' }); c2.appendChild(prog);
+    const ro = el('div', { class: 'readout', style: 'margin-top:10px' }, '<h4>🖥️ Simulator</h4>Set up your plates and press RUN.'); body.appendChild(ro);
+    const chk = el('div'); body.appendChild(chk);
+    const drawProg = () => prog.innerHTML = 'Outcomes discovered: <b>' + Object.keys(found).length + '/6</b><br>' + Object.keys(OUT).map(k => (found[k] ? '✅ ' : '⬜ ') + OUT[k].n).join('<br>');
+    drawProg();
+    run.onclick = () => {
+      key = mv === 'slide' ? 'tr' : mv === 'apart' ? (L === 'O' && R === 'O' ? 'divO' : 'divC') : (L === 'C' && R === 'C' ? 'cc' : L === 'O' && R === 'O' ? 'oo' : 'oc');
+      if (mv === 'apart' && L !== R) { toast('Tip: a mixed pair pulling apart acts like a continental rift here.'); }
+      pred = sel.value; t = 0; running = true; ro.innerHTML = '<h4>🖥️ Running…</h4>Watch closely!';
+    };
+    const SEA = 175;
+    function plate(x0, x1, type, dy = 0) {
+      if (type === 'C') { ctx.fillStyle = '#8a7a5a'; ctx.fillRect(x0, 150 + dy, x1 - x0, 140); ctx.fillStyle = '#6aa84f'; ctx.fillRect(x0, 145 + dy, x1 - x0, 8); }
+      else { ctx.fillStyle = '#3d5a73'; ctx.fillRect(x0, 222 + dy, x1 - x0, 58); }
+    }
+    function bg() {
+      ctx.fillStyle = '#87c5eb'; ctx.fillRect(0, 0, 800, 420); ctx.fillStyle = '#1e6fa8'; ctx.fillRect(0, SEA, 800, 120);
+      const g = ctx.createLinearGradient(0, 280, 0, 420); g.addColorStop(0, '#d9622b'); g.addColorStop(1, '#7a2410'); ctx.fillStyle = g; ctx.fillRect(0, 285, 800, 135);
+      txt(ctx, 'ASTHENOSPHERE', 700, 400, { size: 12, c: '#ffd9c2' });
+    }
+    function volcano(x, base, h, erupt) { poly(ctx, [[x - h * .9, base], [x - 8, base - h], [x + 8, base - h], [x + h * .9, base]], '#5d4037', '#3e2723'); if (erupt) { for (let i = 0; i < 8; i++) { const a = (performance.now() / 300 + i * 1.3) % 1; ctx.beginPath(); ctx.arc(x + Math.sin(i * 7) * 14 * a, base - h - a * 50, 5 * (1 - a) + 1, 0, 7); ctx.fillStyle = i % 2 ? '#ff6b2b' : '#ffd166'; ctx.fill(); } } }
+    function magma(x, y0, y1, n = 5) { for (let i = 0; i < n; i++) { const a = ((performance.now() / 1500) + i / n) % 1; ctx.beginPath(); ctx.arc(x + Math.sin(i * 3 + a * 6) * 6, lerp(y0, y1, a), 5, 0, 7); ctx.fillStyle = '#ff7b2b'; ctx.fill(); } }
+    function arrow(x, y, dir, col = '#fff') { ctx.save(); ctx.translate(x, y); ctx.rotate(dir); ctx.beginPath(); ctx.moveTo(-22, 0); ctx.lineTo(16, 0); ctx.strokeStyle = col; ctx.lineWidth = 5; ctx.stroke(); ctx.beginPath(); ctx.moveTo(24, 0); ctx.lineTo(10, -9); ctx.lineTo(10, 9); ctx.fillStyle = col; ctx.fill(); ctx.restore(); }
+    loop(dt => {
+      if (running) { t = Math.min(1, t + dt / 4.5); if (t >= 1) { running = false; finish(); } }
+      const e = ease(t); const k = key || 'idle';
+      let shake = 0; if ((k === 'tr' || k === 'cc' || k === 'oc' || k === 'oo') && running && Math.sin(t * 40) > .85) shake = 4;
+      ctx.save(); ctx.translate((Math.random() - .5) * shake, (Math.random() - .5) * shake);
+      if (k === 'tr') {
+        ctx.fillStyle = '#c9b48a'; ctx.fillRect(0, 0, 800, 420);
+        const off = e * 90;
+        ctx.fillStyle = '#b7a074'; for (let i = 0; i < 12; i++) { ctx.beginPath(); ctx.arc(80 + i * 37 % 300, (i * 97 - off) % 420 + 20, 14, 0, 7); ctx.fill(); ctx.beginPath(); ctx.arc(480 + i * 53 % 300, (i * 83 + off) % 420 + 20, 14, 0, 7); ctx.fill(); }
+        ctx.fillStyle = '#444'; ctx.fillRect(0, 195 - off / 2, 398, 30); ctx.fillRect(402, 195 + off / 2, 398, 30);
+        ctx.strokeStyle = '#ffd166'; ctx.setLineDash([18, 12]); ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, 210 - off / 2); ctx.lineTo(398, 210 - off / 2); ctx.moveTo(402, 210 + off / 2); ctx.lineTo(800, 210 + off / 2); ctx.stroke(); ctx.setLineDash([]);
+        ctx.strokeStyle = '#7a1f1f'; ctx.lineWidth = 4; ctx.beginPath(); for (let y = 0; y <= 420; y += 20) ctx.lineTo(400 + (y / 20 % 2 ? 3 : -3), y); ctx.stroke();
+        arrow(200, 90, -Math.PI / 2, '#1b4965'); arrow(600, 330, Math.PI / 2, '#1b4965');
+        txt(ctx, 'PACIFIC PLATE', 200, 300, { size: 16, c: '#1b4965' }); txt(ctx, 'NORTH AMERICAN PLATE', 600, 100, { size: 16, c: '#1b4965' });
+        txt(ctx, 'MAP VIEW (looking down from above)', 400, 18, { size: 13, c: '#3b2f1a' });
+        if (running && shake) txt(ctx, '⚡ EARTHQUAKE! ⚡', 400, 380, { size: 22, c: '#d00000', stroke: '#fff' });
+      } else {
+        bg();
+        if (k === 'idle') {
+          plate(0, 398, L); plate(402, 800, R);
+          txt(ctx, (L === 'O' ? 'OCEANIC' : 'CONTINENTAL') + ' PLATE', 200, 120, { c: '#0b1726' }); txt(ctx, (R === 'O' ? 'OCEANIC' : 'CONTINENTAL') + ' PLATE', 600, 120, { c: '#0b1726' });
+          const dirs = mv === 'apart' ? [Math.PI, 0] : mv === 'together' ? [0, Math.PI] : null;
+          if (dirs) { arrow(200, 60, dirs[0]); arrow(600, 60, dirs[1]); } else txt(ctx, '↑ slide ↓  (press RUN for map view)', 400, 60, { c: '#0b1726' });
+        } else if (k === 'divO' || k === 'divC') {
+          const g = e * 90; const lt = L, rt = R;
+          if (k === 'divO') {
+            plate(0, 400 - g / 2, 'O'); plate(400 + g / 2, 800, 'O');
+            ctx.fillStyle = '#ff6b2b'; ctx.fillRect(400 - g / 2, 222, g, 70);
+            const h = e * 45; poly(ctx, [[400 - g / 2 - 60, 222], [400 - 8, 222 - h], [400 + 8, 222 - h], [400 + g / 2 + 60, 222], [400 + g / 2 + 60, 230], [400 - g / 2 - 60, 230]], '#4f6f8a', '#2c3e50');
+            magma(400, 300, 230); txt(ctx, 'MID-OCEAN RIDGE', 400, 140, { c: '#0b1726' }); txt(ctx, 'new lithosphere', 400, 260, { size: 12 });
+          } else {
+            plate(0, 400 - g / 2, 'C'); plate(400 + g / 2, 800, 'C');
+            poly(ctx, [[400 - g / 2, 150 + e * 60], [400 + g / 2, 150 + e * 60], [400 + g / 2, 290], [400 - g / 2, 290]], '#7a6a4a', '#3e2723');
+            ctx.fillStyle = '#ff6b2b'; ctx.fillRect(400 - g / 2, 280, g, 15); magma(400, 300, 230);
+            txt(ctx, 'RIFT VALLEY (crust stretched & sinking)', 400, 120, { c: '#0b1726' });
+          }
+          arrow(150, 60, Math.PI); arrow(650, 60, 0);
+        } else if (k === 'cc') {
+          const sh = e * 50; plate(0, 360 + sh, 'C'); plate(440 - sh, 800, 'C');
+          const H = e * 140; const pts = [[300, 147]]; for (let i = 0; i <= 10; i++) { const x = 300 + i * 20; pts.push([x, 147 - H * Math.sin(i / 10 * Math.PI) * (i % 2 ? 1 : .8)]); } pts.push([500, 147]);
+          poly(ctx, pts, '#7d6b55', '#3e2723'); if (H > 90) pts.forEach(p => { if (p[1] < 147 - H * .75) { ctx.beginPath(); ctx.moveTo(p[0] - 10, p[1] + 14); ctx.lineTo(p[0], p[1]); ctx.lineTo(p[0] + 10, p[1] + 14); ctx.fillStyle = '#fff'; ctx.fill(); } });
+          ctx.strokeStyle = '#5d4037'; ctx.lineWidth = 3; for (let j = 0; j < 4; j++) { ctx.beginPath(); for (let x = 320; x <= 480; x += 8) ctx.lineTo(x, 200 + j * 22 + Math.sin(x / 12) * 10 * e); ctx.stroke(); }
+          ctx.fillStyle = '#8a7a5a'; ctx.beginPath(); ctx.ellipse(400, 290, 100, 50 * e, 0, 0, Math.PI); ctx.fill();
+          arrow(150, 60, 0); arrow(650, 60, Math.PI); txt(ctx, 'HIMALAYA-STYLE MOUNTAINS', 400, 30 + (1 - e) * 60, { c: '#0b1726' });
+        } else if (k === 'oc' || k === 'oo') {
+          const flip = k === 'oc' && L === 'C';
+          ctx.save(); if (flip) { ctx.translate(800, 0); ctx.scale(-1, 1); }
+          const len = 40 + e * 190, ang = .55;
+          const slab = [[400, 222], [400 + Math.cos(ang) * len, 222 + Math.sin(ang) * len], [400 + Math.cos(ang) * len - 30, 222 + Math.sin(ang) * len + 40], [370, 280]];
+          poly(ctx, slab, '#3d5a73', '#1b2a38'); plate(0, 400, 'O');
+          ctx.fillStyle = '#5c86a8'; for (let x = (e * 120) % 40; x < 400; x += 40) ctx.fillRect(x, 240, 4, 30);
+          if (k === 'oc') { plate(400, 800, 'C'); poly(ctx, [[392, 222], [410, 205], [410, 290], [392, 290]], '#8a7a5a'); volcano(540, 147, 25 + e * 60, e > .6); magma(530, 310 + e * 30, 160, 4); }
+          else { ctx.fillStyle = '#3d5a73'; ctx.fillRect(400, 222, 400, 58); [520, 600, 680].forEach((x, i) => volcano(x, 222, 10 + e * (75 - i * 8), e > .6)); magma(540, 320 + e * 30, 230, 4); }
+          ctx.fillStyle = '#123b5c'; poly(ctx, [[385, SEA], [398, 222], [412, SEA]], '#0f3150');
+          ctx.restore();
+          const X = x => flip ? 800 - x : x;
+          txt(ctx, 'SUBDUCTION ZONE', X(470), 380, { stroke: '#0008' }); txt(ctx, 'trench', X(400), 200, { size: 12, c: '#fff', stroke: '#0008' });
+          txt(ctx, k === 'oc' ? 'VOLCANIC MOUNTAINS (like the Andes)' : 'ISLAND ARC (volcanic islands)', X(600), 50, { c: '#0b1726' });
+          arrow(X(150), 100, flip ? Math.PI : 0); arrow(X(700), 100, flip ? 0 : Math.PI);
+        }
+      }
+      ctx.restore();
+    });
+    function finish() {
+      const o = OUT[key]; let bonus = '';
+      if (pred) { if (pred === key) { bonus = '<br><b style="color:#06d6a0">🎯 Your prediction was CORRECT! +15 XP</b>'; addXP(15, 'Correct prediction'); } else bonus = `<br><b style="color:#ef476f">Your prediction was "${OUT[pred].n}" — not this time. Science is about testing!</b>`; }
+      ro.innerHTML = `<h4>${o.type} BOUNDARY → ${o.n}</h4>${o.d}${bonus}`;
+      o.terms.forEach(discover);
+      if (!found[key]) { found[key] = true; toast('🔬 Outcome discovered: ' + o.n); drawProg(); if (Object.keys(found).length === 6) unlock(); }
+    }
+    function unlock() {
+      checkpoint(chk, 'Discovery Check', [
+        { q: 'At a continent-ocean boundary, why does the OCEANIC plate sink?', a: ['Oceanic lithosphere is denser', 'Oceanic lithosphere is thicker', 'Water pushes it down', 'Continents are heavier'], c: 0, e: 'Denser oceanic lithosphere subducts under less-dense continental lithosphere.' },
+        { q: 'Why do continent-continent boundaries produce VERY tall mountains?', a: ['The lithosphere buckles and thickens because neither plate sinks', 'Volcanoes keep erupting', 'The plates move apart', 'Glaciers build them'], c: 0, e: 'Both are thick and buoyant → they crumple upward (Himalayas).' },
+        { q: 'Name two structures that can form at convergent boundaries.', a: ['Mountain ranges and island arcs (volcanoes)', 'Mid-ocean ridges and rift valleys', 'Glaciers and lakes', 'Deserts and canyons'], c: 0, e: 'Tall mountains, volcanic mountains, island arcs, trenches.' },
+        { q: 'Where are most transform boundaries found?', a: ['Near mid-ocean ridges, separating ridge segments', 'In the middle of continents', 'Inside the core', 'At the poles'], c: 0, e: 'Ridges are broken into segments separated by transform boundaries.' },
+      ], done);
+    }
+  }
+});
+
+/* ---- Mission 2: Plate Engines ---- */
+SECTIONS['7.3'].missions.push({
+  id: 'm73b', icon: '⚙️', name: 'What Moves the Plates?', xp: 70,
+  desc: 'Investigate the 3 possible engines: convection, slab pull, and ridge push.',
+  goal: '<b>Goal:</b> Scientists aren\'t 100% sure what moves plates. Turn on each of the <b>3 hypotheses</b> to see how it works. Examine all three, then solve the check.',
+  run(body, done) {
+    const Cv = mkCanvas(body, 800, 400), ctx = Cv.ctx;
+    const ctr = el('div', { class: 'ctrls' }); body.appendChild(ctr);
+    const ro = el('div', { class: 'readout' }, '<h4>⚙️ Engine room</h4>Pick a hypothesis to investigate.'); body.appendChild(ro);
+    const chk = el('div'); body.appendChild(chk);
+    let mode = null; const seen = {}; let unlocked = false;
+    const H = {
+      conv: ['🔥 Convection currents', '<b>Convection</b> = matter carrying heat from one place to another. Mantle rock heats up, <b>expands</b>, becomes <b>less dense</b> and <b>rises</b>. Cold, dense material <b>sinks</b>. These loops are <b>convection currents</b>. Until the <b>1990s</b>, many scientists thought these currents were the MAIN force dragging plates along.', ['Convection', 'Convection currents']],
+      slab: ['⬇️ Slab pull', 'At a subduction zone, the oceanic edge of the plate is <b>colder and denser</b> than the mantle, so it <b>sinks</b> — and <b>pulls the rest of the plate</b> along behind it, like a tablecloth sliding off a table. <b>Today most scientists think slab pull is the MAIN force.</b>', ['Slab pull']],
+      ridge: ['⛰️ Ridge push', 'At a mid-ocean ridge, new lithosphere is <b>warm and less dense</b>, so it <b>sits higher</b> on the asthenosphere. <b>Gravity</b> pulls this high lithosphere <b>down and away</b> from the ridge, and the plate slides away.', ['Ridge push']],
+    };
+    Object.keys(H).forEach(k => { const b = el('button', { class: 'btn' }, H[k][0]); b.onclick = () => { mode = k; ctr.querySelectorAll('.btn').forEach(x => x.classList.remove('on')); b.classList.add('on'); ro.innerHTML = `<h4>${H[k][0]}</h4>${H[k][1]}`; H[k][2].forEach(discover); seen[k] = 1; if (Object.keys(seen).length === 3 && !unlocked) { unlocked = true; unlock(); } }; ctr.appendChild(b); });
+    const parts = Array.from({ length: 140 }, (_, i) => ({ cell: i % 2, th: Math.random() * 7, r: .4 + Math.random() * .6 }));
+    let off = 0;
+    loop((dt, T) => {
+      off += dt * 25;
+      ctx.clearRect(0, 0, 800, 400);
+      const g = ctx.createLinearGradient(0, 130, 0, 400); g.addColorStop(0, '#b5532a'); g.addColorStop(1, '#ff7b2b'); ctx.fillStyle = g; ctx.fillRect(0, 130, 800, 270);
+      ctx.fillStyle = '#1e6fa8'; ctx.fillRect(0, 40, 800, 80);
+      // plate with ridge at 250, subduction at 640
+      const plateTop = x => 100 - (x > 150 && x < 350 ? 30 * Math.max(0, 1 - Math.abs(x - 250) / 100) : 0);
+      ctx.fillStyle = '#3d5a73'; ctx.beginPath(); ctx.moveTo(0, 100); for (let x = 0; x <= 640; x += 10) ctx.lineTo(x, plateTop(x)); ctx.lineTo(640, 100); ctx.lineTo(760, 260); ctx.lineTo(720, 290); ctx.lineTo(610, 135); ctx.lineTo(0, 135); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#5c86a8'; for (let x = 260 + off % 40; x < 620; x += 40) ctx.fillRect(x, 110, 4, 20); for (let x = 240 - off % 40; x > 0; x -= 40) ctx.fillRect(x, 110, 4, 20);
+      ctx.fillStyle = '#ff6b2b'; ctx.fillRect(246, 70, 8, 65);
+      txt(ctx, 'MID-OCEAN RIDGE', 250, 25, { size: 13 }); txt(ctx, 'SUBDUCTION ZONE', 680, 25, { size: 13 });
+      // convection
+      parts.forEach(p => {
+        p.th += dt * .6; const cx = p.cell ? 560 : 250, cy = 270, a = 150 * p.r + 30, b = 90 * p.r + 20;
+        const x = cx + Math.cos(p.th) * a * (p.cell ? 1 : 1), y = cy + Math.sin(p.th) * b * (p.cell ? -1 : 1);
+        const hot = (y - 170) / 200; ctx.beginPath(); ctx.arc(x, y, mode === 'conv' ? 4 : 2.5, 0, 7);
+        ctx.fillStyle = mode === 'conv' ? `rgb(${200 + 55 * hot},${80 + 60 * (1 - hot)},${255 * (1 - hot)})` : 'rgba(255,220,180,.35)'; ctx.fill();
+      });
+      const pulse = (Math.sin(T * 4) + 1) / 2;
+      if (mode === 'conv') { txt(ctx, 'HOT rock rises ↑', 400, 360, { c: '#fff', stroke: '#0008' }); txt(ctx, 'cool rock sinks ↓', 90, 360, { c: '#9fd3ff', stroke: '#0008' }); txt(ctx, 'Convection current', 250, 270, { size: 13, stroke: '#0008' }); }
+      if (mode === 'slab') { ctx.save(); ctx.globalAlpha = .4 + .6 * pulse; ctx.strokeStyle = '#4cc9f0'; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(650, 150); ctx.lineTo(735, 265); ctx.stroke(); ctx.restore(); txt(ctx, '⬇ cold, dense slab SINKS', 640, 320, { stroke: '#0009' }); txt(ctx, '←  pulls the plate  ←', 440, 160, { size: 16, c: '#4cc9f0', stroke: '#0009' }); }
+      if (mode === 'ridge') { txt(ctx, '↙ gravity', 200, 60, { c: '#ffd166', stroke: '#0009' }); txt(ctx, 'gravity ↘', 305, 60, { c: '#ffd166', stroke: '#0009' }); txt(ctx, 'warm, new, HIGH lithosphere', 250, 155, { size: 12, stroke: '#0009' }); txt(ctx, 'plate slides away →', 440, 160, { size: 16, c: '#ffd166', stroke: '#0009' }); }
+      txt(ctx, 'MANTLE', 760, 390, { size: 12, c: '#ffe0cc' });
+    });
+    function unlock() {
+      checkpoint(chk, 'Discovery Check', [
+        { q: 'Which force do MOST scientists today think is the main cause of plate motion?', a: ['Slab pull', 'Convection currents', 'Ridge push', 'Wind'], c: 0, e: 'Slab pull. (Until the 1990s, convection was thought to be the main force.)' },
+        { q: 'Match: "Gravity pulls newly formed lithosphere downward and away from the mid-ocean ridge."', a: ['Ridge push', 'Slab pull', 'Convection currents', 'Subduction'], c: 0, e: 'That\'s ridge push.' },
+        { q: 'Match: "Hot material rises toward the surface and colder material sinks."', a: ['Convection currents', 'Ridge push', 'Slab pull', 'Magnetic reversal'], c: 0, e: 'Rising hot + sinking cold = convection currents.' },
+        { q: 'How is slab pull different from ridge push?', a: ['Slab pull: the sinking edge pulls the plate. Ridge push: gravity slides new, high lithosphere away from the ridge.', 'They both happen only at ridges', 'Slab pull pushes; ridge push pulls toward the ridge', 'There is no difference'], c: 0, e: 'Pull from the subducting end vs. sliding away from the high ridge.' },
+      ], done);
+    }
+  }
+});
+
+/* ---- Mission 3: GPS Tracker ---- */
+SECTIONS['7.3'].missions.push({
+  id: 'm73c', icon: '📡', name: 'GPS Plate Tracker', xp: 60,
+  desc: 'Plates move only a few cm per year. Use GPS math to see how that adds up!',
+  goal: '<b>Goal:</b> Plates crawl only a few <b>centimeters per year</b> — so slow that scientists need <b>GPS</b> to detect it. Play with the tracker, then solve <b>3 GPS calculations</b> correctly.',
+  run(body, done) {
+    discover('GPS');
+    const box = el('div', { class: 'row' }); body.appendChild(box);
+    const c1 = el('div', { class: 'col' }), c2 = el('div', { class: 'col' }); box.append(c1, c2);
+    c1.innerHTML = `<div class="readout"><h4>📡 GPS station settings</h4>
+      Plate speed: <b id="rv">5</b> cm/year<input id="rate" type="range" min="1" max="10" value="5" class="slider">
+      Time: <b id="yv"></b><input id="yrs" type="range" min="0" max="8" value="0" step="1" class="slider">
+      <div style="margin-top:8px;font-size:18px">Distance moved: <b id="dist" style="color:#ffb703"></b></div><div class="hint" id="cmp"></div></div>`;
+    const Cv = mkCanvas(c2, 500, 220), ctx = Cv.ctx;
+    const YRS = [1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000];
+    const fmt = cm => cm < 100 ? cm.toLocaleString() + ' cm' : cm < 100000 ? (cm / 100).toLocaleString() + ' m' : (cm / 100000).toLocaleString() + ' km';
+    const cmpTxt = cm => cm < 10 ? 'About the width of your finger(s).' : cm < 300 ? 'About as far as you can reach.' : cm < 100000 ? 'Like walking across a football field or a few.' : cm < 5000000 ? 'Far enough to cross a city or a state!' : 'Thousands of km — enough to open an ocean!';
+    let anim = 0;
+    function upd() { const r = +$('#rate').value, y = YRS[+$('#yrs').value]; $('#rv').textContent = r; $('#yv').textContent = y.toLocaleString() + (y === 1 ? ' year' : ' years'); const cm = r * y; $('#dist').textContent = fmt(cm); $('#cmp').textContent = cmpTxt(cm); anim = 0; }
+    $('#rate').oninput = upd; $('#yrs').oninput = upd; upd();
+    loop(dt => { anim = Math.min(1, anim + dt); const k = +$('#yrs').value / 8; ctx.clearRect(0, 0, 500, 220); ctx.fillStyle = '#1e6fa8'; ctx.fillRect(0, 0, 500, 220); poly(ctx, [[20, 60], [140, 40], [190, 90], [160, 170], [40, 180]], '#7cae5a'); const x = lerp(0, 280 * k, ease(anim)); poly(ctx, [[220 + x * .2 + 40, 60], [360 + x * .2 + 40, 40], [410 + x * .2 + 40, 110], [300 + x * .2 + 40, 180]].map(p => [Math.min(p[0], 495), p[1]]), '#d4a55a'); txt(ctx, '📡', 330 + x * .2, 100, { size: 26 }); txt(ctx, 'GPS station rides on the plate', 250, 205, { size: 12 }); });
+    let solved = 0;
+    const q = el('div', { class: 'check' }); body.appendChild(q);
+    function newQ() {
+      const r = [2, 3, 4, 5, 6, 8, 10][Math.floor(Math.random() * 7)], y = [10, 100, 1000, 1000000][Math.floor(Math.random() * 4)];
+      const ans = r * y; const opts = shuffle([ans, ans * 10, ans / 10, ans * 100]);
+      q.innerHTML = `<h4>🧮 GPS calculation ${solved + 1} of 3</h4><div class="qt">A GPS station shows a plate moving <b>${r} cm per year</b>. How far will it move in <b>${y.toLocaleString()} years</b>?</div><div class="hint">(100 cm = 1 m, 100,000 cm = 1 km)</div>`;
+      opts.forEach(o => { const b = el('button', { class: 'opt' }, fmt(o)); b.onclick = () => { if (o === ans) { b.classList.add('right'); solved++; toast('✅ Correct!'); if (solved >= 3) { q.innerHTML = '<h4>✅ GPS certified!</h4>Even a few centimeters a year adds up to hundreds of kilometers over millions of years. That\'s how oceans open and mountains rise.'; done(); } else setTimeout(newQ, 700); } else { b.classList.add('wrong'); toast('Multiply speed × time, then convert units.'); } }; q.appendChild(b); });
+    }
+    newQ();
+  }
+});
+
+/* ---- Mission 4: Boundary Blitz ---- */
+SECTIONS['7.3'].missions.push({
+  id: 'm73d', icon: '⚡', name: 'Boundary Blitz', xp: 60,
+  desc: 'Arcade speed round: classify clues as divergent, convergent, or transform in 45 seconds.',
+  goal: '<b>Goal:</b> A clue appears — slam the right boundary type! 45 seconds. Streaks give bonus points. Score <b>10+</b> to complete the mission. Play again to beat your high score.',
+  run(body, done) {
+    const CL = [
+      ['Plates move apart', 0], ['Mid-ocean ridge forms', 0], ['New lithosphere forms as melted rock cools', 0], ['Mid-Atlantic Ridge', 0], ['Rift zone with deep cracks', 0], ['Tension stretches the crust', 0], ['Normal faults are common', 0], ['Most are found beneath the oceans', 0],
+      ['Plates move together', 1], ['Himalayas form', 1], ['Andes form', 1], ['Island arc forms', 1], ['Subduction happens', 1], ['Ocean trench forms', 1], ['Compression pushes rock together', 1], ['Reverse faults are common', 1], ['Nazca plate sinks under South American plate', 1], ['Continent–continent collision', 1], ['Folded mountains form', 1],
+      ['Plates slide past each other horizontally', 2], ['San Andreas fault', 2], ['Pacific & North American plates grind past', 2], ['Separates segments of a mid-ocean ridge', 2], ['Shear stress', 2], ['Strike-slip faults are common', 2],
+    ];
+    const N = ['Divergent ⬅️➡️', 'Convergent ➡️⬅️', 'Transform ⬆️⬇️'];
+    const hi = S.best.blitz || 0;
+    body.innerHTML += `<div class="ctrls"><span class="timer" id="bt">45</span><span class="pill">Score <b id="bs">0</b></span><span class="pill">🔥 <b id="bk">0</b></span><span class="pill">High score ${hi}</span></div>
+      <div class="readout" style="text-align:center;min-height:120px"><div id="clue" style="font-size:26px;font-weight:800;margin:20px 0">Press START</div><div id="fb" class="hint"></div></div>
+      <div class="ctrls" id="bb" style="justify-content:center"></div><div style="text-align:center"><button class="btn go" id="bgo">▶ START</button></div>`;
+    let time = 45, score = 0, streak = 0, cur = null, on = false, deck = [];
+    N.forEach((n, i) => { const b = el('button', { class: 'btn', style: 'font-size:18px;padding:14px 18px;min-width:180px' }, n); b.onclick = () => ans(i); $('#bb').appendChild(b); });
+    function next() { if (!deck.length) deck = shuffle(CL); cur = deck.pop(); $('#clue').textContent = cur[0]; }
+    function ans(i) { if (!on) return; if (i === cur[1]) { streak++; score += 1 + (streak >= 5 ? 1 : 0); $('#fb').innerHTML = '<span style="color:#06d6a0">✔ ' + N[i] + (streak >= 5 ? ' · STREAK BONUS!' : '') + '</span>'; } else { streak = 0; time = Math.max(0, time - 2); $('#fb').innerHTML = `<span style="color:#ef476f">✘ "${cur[0]}" → ${N[cur[1]]} (-2s)</span>`; } $('#bs').textContent = score; $('#bk').textContent = streak; next(); }
+    $('#bgo').onclick = () => { time = 45; score = 0; streak = 0; on = true; $('#bs').textContent = 0; $('#bgo').style.display = 'none'; next(); };
+    loop(dt => { if (!on) return; time -= dt; $('#bt').textContent = Math.ceil(Math.max(0, time)); if (time <= 0) { on = false; $('#clue').textContent = `⏱ Time! Score: ${score}`; const nb = score > (S.best.blitz || 0); if (nb) { S.best.blitz = score; save(); } $('#fb').innerHTML = nb ? '🏆 NEW HIGH SCORE!' : 'High score: ' + S.best.blitz; addXP(score * 2, 'Boundary Blitz'); if (score >= 10) done(); $('#bgo').style.display = ''; $('#bgo').textContent = '🔁 Play again'; } });
+  }
+});
+/* ================= 7.4 DEFORMING THE EARTH'S CRUST ================= */
+SECTIONS['7.4'] = {
+  title: 'Deforming the Crust', avatar: '⛰️',
+  log: '> FIELD LOG · Rock layers should be flat... so why are these ones bent and broken?',
+  brief: 'Put rocks under stress in the lab, then head into the field to read folds and faults like a detective. Finish by building mountains and sinking the crust with glaciers.',
+  vocab: [
+    ['Stress', 'The amount of force per unit area placed on an object'],
+    ['Deformation', 'When rock changes shape (bends or breaks) because of stress'],
+    ['Folding', 'When rock layers bend under stress'],
+    ['Syncline', 'U-shaped fold; oldest rocks outside, youngest rocks inside'],
+    ['Anticline', '∩-shaped fold; youngest rocks outside, oldest rocks inside'],
+    ['Monocline', 'Fold where both ends of the layers stay horizontal (a step)'],
+    ['Fault', 'A crack where rocks break and move past each other'],
+    ['Fault blocks', 'The blocks of rock on either side of a fault'],
+    ['Hanging wall', 'The fault block ABOVE the fault'],
+    ['Footwall', 'The fault block BELOW the fault'],
+    ['Normal fault', 'Hanging wall moves DOWN; caused by tension; common at divergent boundaries'],
+    ['Reverse fault', 'Hanging wall moves UP; caused by compression; common at convergent boundaries'],
+    ['Strike-slip fault', 'Blocks slide past horizontally; caused by shear stress; transform boundaries'],
+    ['Tension', 'Stress that pulls rock apart'],
+    ['Compression', 'Stress that pushes rock together'],
+    ['Shear stress', 'Stress that pushes parts of rock in different directions'],
+    ['Folded mountains', 'Rock layers squeezed together and pushed up (e.g. Appalachians)'],
+    ['Fault-block mountains', 'Tension breaks lithosphere into normal faults; pieces drop down'],
+    ['Volcanic mountains', 'Melted rock erupts onto the surface (e.g. Andes, Hawaiian Islands)'],
+    ['Ring of Fire', 'Area around the Pacific Ocean where most active volcanoes are'],
+    ['Uplift', 'When parts of the crust rise to higher elevations'],
+    ['Subsidence', 'When parts of the crust sink to lower elevations'],
+    ['Rebound', 'Crust slowly rising back up after weight (like a glacier) is removed'],
+    ['Rift zone', 'A set of deep cracks that forms at a divergent boundary'],
+  ],
+  quiz: [
+    { q: 'What is stress?', a: ['The amount of force per unit area placed on an object', 'A type of rock', 'A crack in rock', 'Heat in the mantle'], c: 0, e: 'Stress = force per unit area.' },
+    { q: 'When a rock "deforms," it...', a: ['Changes shape', 'Melts completely', 'Becomes magnetic', 'Turns into a fossil'], c: 0, e: 'Deform = change shape (bend or break).' },
+    { q: 'A small amount of stress applied SLOWLY to rock usually makes it...', a: ['Bend', 'Break', 'Melt', 'Disappear'], c: 0, e: 'Small + slow → bend (like gently bending spaghetti).' },
+    { q: 'A LARGE stress, or stress applied QUICKLY, usually makes rock...', a: ['Break', 'Bend gently', 'Float', 'Grow'], c: 0, e: 'Large or fast → break (like snapping spaghetti).' },
+    { q: 'What is folding?', a: ['When rock layers bend under stress', 'When rock layers break and slide', 'When magma erupts', 'When crust sinks under a glacier'], c: 0, e: 'Folding = layers bend; the bends are called folds.' },
+    { q: 'How do folds show that deformation has happened?', a: ['Most rock layers start out horizontal, so bent layers must have been deformed', 'Folds are always new', 'Folds glow in the dark', 'Folds only form underwater'], c: 0, e: 'Layers form flat; a fold means stress bent them.' },
+    { q: 'In a SYNCLINE...', a: ['The oldest rocks are on the outside and the fold is usually U-shaped', 'The youngest rocks are on the outside and the fold is ∩-shaped', 'Both ends are horizontal', 'The rock is broken'], c: 0, e: 'Syncline: U-shaped, oldest outside, youngest inside.' },
+    { q: 'In an ANTICLINE...', a: ['The youngest rocks are on the outside and the fold is usually ∩-shaped', 'The oldest rocks are on the outside and it is U-shaped', 'The layers are flat', 'The fold is a step'], c: 0, e: 'Anticline: ∩-shaped (an "A" for arch), oldest rocks inside.' },
+    { q: 'In a MONOCLINE...', a: ['Both ends of the fold are horizontal', 'The layers form a U', 'The layers form an arch', 'The layers are broken by a fault'], c: 0, e: 'Monocline = a step-like bend; both sides stay flat.' },
+    { q: 'What is a fault?', a: ['A crack where rocks break and move past each other', 'A bend in rock layers', 'A type of volcano', 'A magnetic stripe'], c: 0, e: 'A fault is a break along which rocks move.' },
+    { q: 'The blocks of rock on either side of a fault are called...', a: ['Fault blocks', 'Folds', 'Plates', 'Segments'], c: 0, e: 'Fault blocks — when they move suddenly, they can cause earthquakes.' },
+    { q: 'When fault blocks move suddenly, they can cause...', a: ['Earthquakes', 'Magnetic reversals', 'Glaciers', 'Fossils'], c: 0, e: 'Sudden fault movement → earthquakes.' },
+    { q: 'Which fault block is ABOVE the fault?', a: ['Hanging wall', 'Footwall', 'Syncline', 'Monocline'], c: 0, e: 'Hanging wall = above (you could "hang" a lantern from it). Footwall = below (where your feet would be).' },
+    { q: 'In a NORMAL fault, the hanging wall...', a: ['Moves down (relative to the footwall)', 'Moves up', 'Slides sideways horizontally', 'Does not move'], c: 0, e: 'Normal: hanging wall down, footwall up, or both.' },
+    { q: 'Normal faults form when rock is under...', a: ['Tension', 'Compression', 'Shear stress', 'No stress'], c: 0, e: 'Tension pulls rock apart → normal faults.' },
+    { q: 'Why are normal faults common along DIVERGENT boundaries?', a: ['The crust is stretched (tension) there', 'The crust is squeezed there', 'Plates slide past there', 'There is no stress there'], c: 0, e: 'Divergent = pulling apart = tension = normal faults.' },
+    { q: 'In a REVERSE fault, the hanging wall...', a: ['Moves up (relative to the footwall)', 'Moves down', 'Moves sideways only', 'Melts'], c: 0, e: 'Reverse: hanging wall up, footwall down, or both.' },
+    { q: 'Reverse faults form under ______ and are common at ______ boundaries.', a: ['compression; convergent', 'tension; divergent', 'shear stress; transform', 'tension; convergent'], c: 0, e: 'Compression pushes rock together → reverse faults at convergent boundaries.' },
+    { q: 'In a STRIKE-SLIP fault, the fault blocks...', a: ['Move past each other horizontally', 'Move up and down', 'Fold into a U shape', 'Sink together'], c: 0, e: 'Strike-slip = horizontal sliding.' },
+    { q: 'Strike-slip faults form under ______ and are common at ______ boundaries.', a: ['shear stress; transform', 'tension; divergent', 'compression; convergent', 'shear stress; divergent'], c: 0, e: 'Shear stress → strike-slip faults → transform boundaries.' },
+    { q: 'What is tension?', a: ['Stress that pulls rock apart', 'Stress that pushes rock together', 'Stress that pushes rock in different directions', 'The weight of a glacier'], c: 0, e: 'Tension = pull apart.' },
+    { q: 'What is compression?', a: ['Stress that pushes rock together', 'Stress that pulls rock apart', 'Stress that slides rock sideways', 'Heat from the mantle'], c: 0, e: 'Compression = push together.' },
+    { q: 'What is shear stress?', a: ['Stress that pushes different parts of the rock in different directions', 'Stress that pulls rock apart', 'Stress that pushes rock together', 'Stress from glaciers'], c: 0, e: 'Shear = parts pushed in different directions (sliding past).' },
+    { q: 'In a photo, the dark rock layer in the hanging wall is LOWER than the same layer in the footwall. What kind of fault is it?', a: ['Normal fault', 'Reverse fault', 'Strike-slip fault', 'It is a fold, not a fault'], c: 0, e: 'Hanging wall moved down → normal fault.' },
+    { q: 'What are the three main ways mountains form?', a: ['Folding, faulting, and volcanism', 'Erosion, rain, and wind', 'Glaciers, rivers, and lakes', 'Subsidence, rebound, and uplift'], c: 0, e: 'Folded, fault-block, and volcanic mountains.' },
+    { q: 'Folded mountains form when...', a: ['Rock layers are squeezed together and pushed upward', 'Tension breaks the crust into normal faults', 'Melted rock erupts', 'Glaciers melt'], c: 0, e: 'Squeeze + push up → folded mountains, usually at convergent boundaries.' },
+    { q: 'The Appalachian Mountains formed when...', a: ['North America collided with Europe and Africa hundreds of millions of years ago', 'A volcano erupted in 1980', 'Glaciers pushed rock up', 'The Pacific plate slid past'], c: 0, e: 'They are folded mountains from a continental collision.' },
+    { q: 'Fault-block mountains form when...', a: ['Tension breaks the lithosphere into many normal faults and pieces drop down', 'Compression folds layers', 'Lava builds a cone', 'Plates slide past each other'], c: 0, e: 'Tension → many normal faults → some blocks drop, others stand high.' },
+    { q: 'What kind of stress forms fault-block mountains?', a: ['Tension', 'Compression', 'Shear stress', 'No stress'], c: 0, e: 'Tension.' },
+    { q: 'Volcanic mountains form when...', a: ['Melted rock erupts onto Earth\'s surface', 'Rock layers fold', 'The crust sinks', 'Plates slide horizontally'], c: 0, e: 'Volcanic mountains are built by erupting melted rock.' },
+    { q: 'Most major volcanic mountains are found at...', a: ['Convergent boundaries', 'The center of plates only', 'Transform boundaries', 'The North Pole'], c: 0, e: 'Most major volcanic mountains are at convergent boundaries.' },
+    { q: 'The Andes formed where...', a: ['The Nazca plate subducts beneath the South American plate', 'The Pacific and North American plates slide past', 'Africa and South America pull apart', 'India hits Asia'], c: 0, e: 'Convergent (continent–ocean) boundary with subduction.' },
+    { q: 'The Hawaiian Islands are an example of...', a: ['Volcanoes on the ocean floor that grew tall enough to rise above the water', 'Folded mountains', 'Fault-block mountains', 'A rift valley'], c: 0, e: 'Volcanic mountains can form on the ocean floor and become islands.' },
+    { q: 'What is the Ring of Fire?', a: ['The area around the edge of the Pacific Ocean where most active volcanoes are', 'A ring of lava around the core', 'A mid-ocean ridge', 'A magnetic stripe'], c: 0, e: 'Most of Earth\'s active volcanoes are around the Pacific.' },
+    { q: 'Why does it take a very long time for most mountains to form?', a: ['Plates move only a few centimeters per year', 'Rocks are very light', 'Volcanoes erupt every day', 'Gravity stops them'], c: 0, e: 'Slow plate motion → stress builds over very long periods of time.' },
+    { q: 'What is uplift?', a: ['When parts of the crust rise to higher elevations', 'When crust sinks', 'When rocks fold', 'When glaciers form'], c: 0, e: 'Uplift = rise. Uplifted rocks may or may not be deformed.' },
+    { q: 'What is subsidence?', a: ['When parts of the crust sink to lower elevations', 'When crust rises', 'When plates collide', 'When magma erupts'], c: 0, e: 'Subsidence = sink. Unlike some uplifted rocks, rocks that subside do NOT deform.' },
+    { q: 'Why does ocean crust far from a mid-ocean ridge subside?', a: ['It cools as it moves away, becomes denser, and sinks', 'It gets heated and rises', 'Glaciers push it down', 'It is pulled into the core'], c: 0, e: 'Hot rock is less dense; as crust cools it sinks lower. Old, cold crust is lower than young, hot crust.' },
+    { q: 'A huge glacier forms on the crust. What happens?', a: ['Its weight pushes the crust down (subsidence)', 'The crust rises', 'A volcano forms', 'A strike-slip fault forms'], c: 0, e: 'Glacier weight → subsidence. When it melts → rebound.' },
+    { q: 'What is rebound?', a: ['The crust slowly rising back to its original elevation after weight is removed', 'A bouncing earthquake', 'A reverse fault', 'Lava flowing back down'], c: 0, e: 'When glaciers melt, the crust rebounds.' },
+    { q: 'What is a rift zone?', a: ['A set of deep cracks that forms at a divergent boundary', 'A chain of volcanic islands', 'A U-shaped fold', 'The edge of the Pacific'], c: 0, e: 'Tension stretches crust → normal faults → subsidence in rift zones.' },
+    { q: 'Which can cause uplift and subsidence?', a: ['Temperature changes, changes in weight on the crust, and tension forming normal faults', 'Only earthquakes', 'Only the Moon', 'Only ocean tides'], c: 0, e: 'Three causes in the text: temperature, weight (glaciers), and tension (fault-block / rift zones).' },
+  ],
+  missions: []
+};
+
+/* ---- Mission 1: Stress Tester ---- */
+SECTIONS['7.4'].missions.push({
+  id: 'm74a', icon: '🍝', name: 'Rock Stress Tester', xp: 60,
+  desc: 'Squeeze a rock sample like spaghetti. When does it bend — and when does it SNAP?',
+  goal: '<b>Goal:</b> Set the <b>force</b> and how <b>fast</b> you apply it, then press <b>APPLY STRESS</b>. Make the rock <b>bend</b> once and <b>break</b> once.',
+  run(body, done) {
+    const Cv = mkCanvas(body, 760, 300), ctx = Cv.ctx;
+    const box = el('div', { class: 'readout' }); body.appendChild(box);
+    box.innerHTML = `Force: <b id="fv">3</b><input id="force" type="range" min="1" max="10" value="3" class="slider">
+      <div class="ctrls"><button class="btn on" id="slow">🐢 Apply SLOWLY</button><button class="btn" id="fast">⚡ Apply QUICKLY</button><button class="btn go" id="go">💪 APPLY STRESS</button><button class="btn" id="reset">↺ New sample</button></div><div id="res" class="mono">Results: bent ⬜ · broke ⬜</div>`;
+    let fast = false, t = 0, run = false, broke = false, target = 0; const got = {}; let unlocked = false;
+    $('#force').oninput = () => $('#fv').textContent = $('#force').value;
+    $('#slow').onclick = () => { fast = false; $('#slow').classList.add('on'); $('#fast').classList.remove('on'); };
+    $('#fast').onclick = () => { fast = true; $('#fast').classList.add('on'); $('#slow').classList.remove('on'); };
+    $('#reset').onclick = () => { t = 0; run = false; broke = false; };
+    $('#go').onclick = () => { t = 0; broke = false; run = true; const f = +$('#force').value; target = f * (fast ? 2 : 1); };
+    loop(dt => {
+      if (run) { t = Math.min(1, t + dt / (fast ? .6 : 2.5)); if (target >= 11 && t > .55) broke = true; if (t >= 1) { run = false; const k = broke ? 'broke' : 'bent'; if (!got[k]) { got[k] = 1; toast(broke ? '💥 SNAP! The rock broke — a FAULT could form.' : '〰️ The rock bent without breaking — a FOLD!'); } $('#res').innerHTML = `Results: bent ${got.bent ? '✅' : '⬜'} · broke ${got.broke ? '✅' : '⬜'}<br>${broke ? 'Large or quick stress → the rock BREAKS.' : 'Small stress applied slowly → the rock BENDS.'}`; discover('Stress'); discover('Deformation'); if (got.bent && got.broke && !unlocked) { unlocked = true; unlock(); } } }
+      ctx.clearRect(0, 0, 760, 300);
+      const bend = Math.min(target, 11) / 11 * 70 * ease(t);
+      const cols = ['#a1887f', '#d7ccc8', '#8d6e63', '#ffcc80'];
+      const drawHalf = (x0, x1, rot, px, py) => { ctx.save(); ctx.translate(px, py); ctx.rotate(rot); ctx.translate(-px, -py); cols.forEach((c, i) => { ctx.beginPath(); for (let x = x0; x <= x1; x += 5) { const u = (x - 380) / 300; ctx.lineTo(x, 130 + i * 14 + bend * (1 - u * u)); } for (let x = x1; x >= x0; x -= 5) { const u = (x - 380) / 300; ctx.lineTo(x, 144 + i * 14 + bend * (1 - u * u)); } ctx.closePath(); ctx.fillStyle = c; ctx.fill(); }); ctx.restore(); };
+      if (broke) { const r = Math.min(.35, (t - .55) * 1.2); drawHalf(80, 375, r, 80, 160); drawHalf(385, 680, -r, 680, 160); txt(ctx, '💥', 380, 150 + bend, { size: 40 }); txt(ctx, 'BROKEN → FAULT', 380, 270, { c: '#ef476f', size: 18 }); }
+      else { drawHalf(80, 680, 0, 0, 0); if (t > 0) txt(ctx, t >= 1 ? 'BENT → FOLD' : '...', 380, 270, { c: '#06d6a0', size: 18 }); }
+      ctx.fillStyle = '#607d8b'; ctx.fillRect(40, 110, 40, 90); ctx.fillRect(680, 110, 40, 90);
+      if (run || t > 0) { txt(ctx, '⬇', 380, 90 + bend * .5, { size: 34, c: fast ? '#ffb703' : '#4cc9f0' }); }
+      txt(ctx, 'STRESS = force per unit area', 380, 30, { c: '#9fb6cf', size: 14 });
+    });
+    function unlock() {
+      checkpoint(body, 'Discovery Check', [
+        { q: 'What is stress?', a: ['The amount of force per unit area placed on an object', 'How fast a rock moves', 'The age of a rock', 'The temperature of rock'], c: 0, e: 'Stress = force per unit area.' },
+        { q: 'When does rock BEND instead of break?', a: ['When a small amount of stress is put on it slowly', 'When a huge stress is applied quickly', 'When it is frozen', 'Never'], c: 0, e: 'Small + slow → bend. Large or fast → break.' },
+        { q: 'When rock changes shape because of stress, we say it...', a: ['Deforms', 'Erodes', 'Erupts', 'Subducts'], c: 0, e: 'Deform = change shape.' },
+      ], done);
+    }
+  }
+});
+
+/* ---- Mission 2: Fold Factory ---- */
+SECTIONS['7.4'].missions.push({
+  id: 'm74b', icon: '〰️', name: 'Fold Factory', xp: 70,
+  desc: 'Bend rock layers into anticlines, synclines and monoclines. Find the oldest rock!',
+  goal: '<b>Goal:</b> Layers are numbered <b>1 (oldest, deposited first)</b> to <b>5 (youngest)</b>. Complete the work orders by shaping the layers with the slider. Click any layer to check its age. Try the <b>Erosion</b> button to see what a geologist would see at the surface!',
+  run(body, done) {
+    const Cv = mkCanvas(body, 800, 340), ctx = Cv.ctx;
+    const ctr = el('div', { class: 'ctrls' }); body.appendChild(ctr);
+    ctr.innerHTML = `<span class="hint">U-shape</span><input id="fold" type="range" min="-100" max="100" value="0" class="slider" style="flex:1"><span class="hint">∩-shape</span>`;
+    const bM = el('button', { class: 'btn' }, '📐 Step mode (monocline)'), bE = el('button', { class: 'btn' }, '🌧️ Erosion: OFF'); ctr.append(bM, bE);
+    const ro = el('div', { class: 'readout' }); body.appendChild(ro);
+    let mono = false, ero = false, task = 0, sh = 0; const fs = $('#fold');
+    bM.onclick = () => { mono = !mono; bM.classList.toggle('on', mono); };
+    bE.onclick = () => { ero = !ero; bE.classList.toggle('on', ero); bE.textContent = '🌧️ Erosion: ' + (ero ? 'ON' : 'OFF'); };
+    const tasks = [
+      ['Make an <b>ANTICLINE</b> (∩-shaped arch). Step mode OFF.', () => !mono && +fs.value > 70, 'Anticline', 'In an anticline the <b>oldest rocks are on the INSIDE</b> (center) of the fold, and the youngest are on the outside.'],
+      ['Make a <b>SYNCLINE</b> (U-shaped trough). Step mode OFF.', () => !mono && +fs.value < -70, 'Syncline', 'In a syncline the <b>youngest rocks are on the INSIDE</b>, and the oldest are on the outside.'],
+      ['Make a <b>MONOCLINE</b> — turn on Step mode and bend it strongly.', () => mono && Math.abs(+fs.value) > 70, 'Monocline', 'In a monocline, <b>both ends of the fold stay horizontal</b> — it looks like a step.'],
+      ['Now make an <b>anticline</b> and turn <b>Erosion ON</b>. Which layer number shows at the CENTER of the surface?', () => !mono && +fs.value > 70 && ero, null, 'The oldest layers are exposed in the center of an eroded anticline.'],
+    ];
+    const cols = ['#5d4037', '#8d6e63', '#bcaaa4', '#e0c097', '#ffe0a3'];
+    const off = x => { const A = +fs.value * 1.1; if (mono) return -A * .5 * (1 + Math.tanh((x - 400) / 50)) + A * .5; return -A * Math.exp(-Math.pow((x - 400) / 150, 2)); };
+    const yb = i => 300 - i * 34;
+    Cv.cv.onclick = e => { const p = Cv.pos(e); const o = off(p.x); for (let i = 0; i < 5; i++) { if (p.y <= yb(i) + o && p.y >= yb(i + 1) + o) { if (ero && p.y < 130) break; ro.dataset.extra = `<br>🔍 You clicked <b>Layer ${i + 1}</b> — ${i === 0 ? 'the OLDEST' : i === 4 ? 'the YOUNGEST' : i < 2 ? 'older' : 'younger'} rock.`; drawRO(); return; } } };
+    function drawRO() { const T = tasks[task]; ro.innerHTML = task < tasks.length ? `<h4>📋 Work order ${task + 1}/${tasks.length}</h4>${T[0]}${ro.dataset.extra || ''}` : `<h4>✅ All work orders complete!</h4>${ro.dataset.extra || ''}`; }
+    drawRO();
+    let hold = 0;
+    loop(dt => {
+      if (task < tasks.length && tasks[task][1]()) { hold += dt; if (hold > .6) { const T = tasks[task]; if (T[2]) discover(T[2]); discover('Folding'); toast('✅ ' + (T[2] || 'Erosion view') + ' made!'); ro.dataset.extra = '<br>💡 ' + T[3]; task++; hold = 0; drawRO(); if (task === tasks.length) unlock(); } } else hold = 0;
+      ctx.clearRect(0, 0, 800, 340); ctx.fillStyle = '#87c5eb'; ctx.fillRect(0, 0, 800, 340);
+      for (let i = 0; i < 5; i++) { ctx.beginPath(); for (let x = 0; x <= 800; x += 8) ctx.lineTo(x, yb(i + 1) + off(x)); for (let x = 800; x >= 0; x -= 8) ctx.lineTo(x, yb(i) + off(x)); ctx.closePath(); ctx.fillStyle = cols[i]; ctx.fill(); ctx.strokeStyle = '#0005'; ctx.lineWidth = 1; ctx.stroke(); }
+      ctx.fillStyle = '#4e342e'; ctx.fillRect(0, 300 + 0, 800, 40);
+      if (ero) { ctx.fillStyle = '#87c5eb'; ctx.fillRect(0, 0, 800, 128); ctx.fillStyle = '#6aa84f'; ctx.fillRect(0, 126, 800, 4); txt(ctx, '— eroded flat land surface —', 400, 110, { c: '#0b1726', size: 13 }); }
+      for (let i = 0; i < 5; i++) { const y = (yb(i) + yb(i + 1)) / 2 + off(30); if (!ero || y > 135) txt(ctx, String(i + 1), 30, y, { c: '#fff', stroke: '#000', size: 15 }); }
+      txt(ctx, '1 = oldest · 5 = youngest', 690, 325, { c: '#fff', size: 12 });
+    });
+    function unlock() {
+      checkpoint(body, 'Discovery Check', [
+        { q: 'With erosion ON, which layer showed at the CENTER of the eroded anticline?', a: ['The oldest layers (low numbers)', 'Layer 5, the youngest', 'No layers show', 'A random layer'], c: 0, e: 'The oldest rocks are in the core (inside) of an anticline.' },
+        { q: 'How do folds show that deformation happened?', a: ['Most rock layers start out horizontal', 'Folds always contain fossils', 'Folds are always red', 'Rock layers start out bent'], c: 0, e: 'Layers are laid down flat — a bend means stress deformed them.' },
+        { q: 'Which statement about a SYNCLINE is correct?', a: ['Usually U-shaped, oldest rocks on the outside', 'Usually ∩-shaped, oldest rocks inside', 'Both ends are horizontal', 'It is a broken layer'], c: 0, e: 'Syncline: U-shape; youngest inside, oldest outside.' },
+      ], done);
+    }
+  }
+});
+
+/* ---- Mission 3: Fault Lab ---- */
+SECTIONS['7.4'].missions.push({
+  id: 'm74c', icon: '🪓', name: 'Fault Lab & Detective', xp: 90,
+  desc: 'Find the hanging wall and footwall, create all 3 faults, then solve fault mysteries.',
+  goal: '<b>Goal:</b> (1) Identify the <b>hanging wall</b> (block ABOVE the fault) and the <b>footwall</b> (block BELOW). (2) Apply all 3 kinds of stress. (3) Solve 4 <b>Fault Detective</b> cases.',
+  run(body, done) {
+    const Cv = mkCanvas(body, 800, 380), ctx = Cv.ctx;
+    const ctr = el('div', { class: 'ctrls' }); body.appendChild(ctr);
+    const ro = el('div', { class: 'readout' }); body.appendChild(ro);
+    const cases = el('div'); body.appendChild(cases);
+    const F0 = [330, 90], F1 = [470, 340]; const fl = Math.hypot(F1[0] - F0[0], F1[1] - F0[1]); const fu = [(F1[0] - F0[0]) / fl, (F1[1] - F0[1]) / fl];
+    let stage = 0, mode = null, t = 0, disp = 0; const did = {};
+    const S3 = {
+      tension: ['↔️ Tension (pull apart)', 'Normal fault', 1, 'NORMAL FAULT: under <b>tension</b> the <b>hanging wall moves DOWN</b> relative to the footwall. Common at <b>divergent</b> boundaries where the crust stretches.', 'Tension'],
+      compression: ['➡️⬅️ Compression (push together)', 'Reverse fault', -1, 'REVERSE FAULT: under <b>compression</b> the <b>hanging wall moves UP</b> relative to the footwall. Common at <b>convergent</b> boundaries where plates collide.', 'Compression'],
+      shear: ['⬆️⬇️ Shear stress', 'Strike-slip fault', 0, 'STRIKE-SLIP FAULT: <b>shear stress</b> pushes the blocks in different directions so they slide past each other <b>horizontally</b>. Common along <b>transform</b> boundaries (like the San Andreas).', 'Shear stress'],
+    };
+    const btns = {};
+    Object.keys(S3).forEach(k => { const b = el('button', { class: 'btn', disabled: '' }, S3[k][0]); b.disabled = true; b.onclick = () => { mode = k; t = 0; ctr.querySelectorAll('.btn').forEach(x => x.classList.remove('on')); b.classList.add('on'); }; btns[k] = b; ctr.appendChild(b); });
+    const msg = () => { ro.innerHTML = stage === 0 ? '<h4>Step 1</h4>Click the <b>HANGING WALL</b> — the block that sits ABOVE the slanted fault.' : stage === 1 ? '<h4>Step 2</h4>Now click the <b>FOOTWALL</b> — the block BELOW the fault.' : `<h4>Step 3 — apply stress</h4>Faults made: ${Object.keys(did).length}/3${mode && t >= 1 ? '<br>' + S3[mode][3] : ''}`; };
+    msg();
+    const isHang = (x, y) => { const fx = F0[0] + (y - F0[1]) / fu[1] * fu[0]; return x > fx; };
+    Cv.cv.onclick = e => { const p = Cv.pos(e); if (p.y < 90 || p.y > 340 || stage > 1) return; const h = isHang(p.x, p.y);
+      if (stage === 0) { if (h) { stage = 1; discover('Hanging wall'); toast('✅ Hanging wall! It "hangs" over the fault — you could hang a lantern from it.'); } else toast('❌ That block is UNDER the fault. Look at which side the slant leans over.'); }
+      else if (stage === 1) { if (!h) { stage = 2; discover('Footwall'); discover('Fault blocks'); discover('Fault'); toast('✅ Footwall! Your FEET would stand on it.'); Object.values(btns).forEach(b => b.disabled = false); } else toast('❌ That\'s the hanging wall again.'); }
+      msg(); };
+    function layers(clipPts, dx, dy) {
+      ctx.save(); ctx.beginPath(); clipPts.forEach((p, i) => i ? ctx.lineTo(p[0] + dx, p[1] + dy) : ctx.moveTo(p[0] + dx, p[1] + dy)); ctx.closePath(); ctx.clip();
+      const c = ['#ffe0a3', '#c9a37a', '#4e342e', '#bcaaa4', '#8d6e63', '#d7ccc8']; for (let i = 0; i < 6; i++) { ctx.fillStyle = c[i]; ctx.fillRect(-100 + dx, 90 + i * 42 + dy, 1000, 42); }
+      ctx.restore(); ctx.beginPath(); clipPts.forEach((p, i) => i ? ctx.lineTo(p[0] + dx, p[1] + dy) : ctx.moveTo(p[0] + dx, p[1] + dy)); ctx.closePath(); ctx.strokeStyle = '#222'; ctx.lineWidth = 2; ctx.stroke();
+    }
+    const FW = [[0, 90], F0, F1, [0, 340]], HW = [F0, [800, 90], [800, 340], F1];
+    function arrowH(x, y, d, col) { txt(ctx, d > 0 ? '➡' : '⬅', x, y, { size: 34, c: col }); }
+    loop(dt => {
+      ctx.clearRect(0, 0, 800, 380); ctx.fillStyle = '#87c5eb'; ctx.fillRect(0, 0, 800, 380);
+      if (mode && stage === 2) { t = Math.min(1, t + dt / 2); if (t >= 1 && !did[mode]) { did[mode] = 1; discover(S3[mode][1]); discover(S3[mode][4]); toast('🪓 Created: ' + S3[mode][1]); msg(); if (Object.keys(did).length === 3) startCases(); } else if (t >= 1) msg(); }
+      const e = ease(t);
+      if (mode === 'shear' && stage === 2) {
+        txt(ctx, 'MAP VIEW (from above)', 400, 20, { c: '#0b1726' });
+        const o = e * 70; ctx.fillStyle = '#a5d6a7'; ctx.fillRect(40, 60 - o, 350, 280); ctx.fillRect(410, 60 + o, 350, 280);
+        ctx.fillStyle = '#4e342e'; ctx.fillRect(40, 180 - o, 350, 30); ctx.fillRect(410, 180 + o, 350, 30);
+        txt(ctx, '⬆', 215, 100 - o, { size: 34, c: '#d00' }); txt(ctx, '⬇', 585, 300 + o, { size: 34, c: '#d00' });
+        txt(ctx, 'blocks slide past HORIZONTALLY', 400, 365, { c: '#0b1726' });
+        return;
+      }
+      let dx = 0, dy = 0; if (mode && stage === 2) { const s = S3[mode][2] * e * 70; dx = fu[0] * s; dy = fu[1] * s; }
+      layers(FW, 0, 0); layers(HW, dx, dy);
+      ctx.strokeStyle = '#d00'; ctx.lineWidth = 4; ctx.setLineDash([10, 6]); ctx.beginPath(); ctx.moveTo(F0[0] - fu[0] * 20, F0[1] - fu[1] * 20); ctx.lineTo(F1[0] + fu[0] * 20, F1[1] + fu[1] * 20); ctx.stroke(); ctx.setLineDash([]);
+      txt(ctx, 'FAULT', 300, 70, { c: '#d00' });
+      if (stage >= 1) txt(ctx, 'HANGING WALL', 640 + dx, 130 + dy, { stroke: '#000' });
+      if (stage >= 2) txt(ctx, 'FOOTWALL', 160, 130, { stroke: '#000' });
+      if (mode === 'tension' && stage === 2) { arrowH(60, 365, -1, '#d00'); arrowH(740, 365, 1, '#d00'); txt(ctx, 'hanging wall slides DOWN', 400, 365, { c: '#0b1726' }); }
+      if (mode === 'compression' && stage === 2) { arrowH(60, 365, 1, '#d00'); arrowH(740, 365, -1, '#d00'); txt(ctx, 'hanging wall pushed UP', 400, 365, { c: '#0b1726' }); }
+    });
+    let solved = 0, started = false;
+    function startCases() {
+      if (started) return; started = true;
+      const box = el('div', { class: 'check' }); cases.appendChild(box);
+      function newCase() {
+        const k = ['tension', 'compression', 'shear', Math.random() < .5 ? 'tension' : 'compression'][Math.floor(Math.random() * 4)];
+        const name = S3[k][1]; box.innerHTML = `<h4>🕵️ Fault Detective — case ${solved + 1} of 4</h4>`;
+        const c = el('canvas'); c.width = 600; c.height = 230; box.appendChild(c); const x = c.getContext('2d');
+        x.fillStyle = '#87c5eb'; x.fillRect(0, 0, 600, 230);
+        if (k === 'shear') { x.fillStyle = '#a5d6a7'; x.fillRect(20, 20, 270, 190); x.fillRect(310, 50, 270, 170); x.fillStyle = '#555'; x.fillRect(20, 100, 270, 20); x.fillRect(310, 140, 270, 20); x.fillStyle = '#fff'; x.font = 'bold 14px sans-serif'; x.fillText('Map view: a road was split and offset sideways', 90, 225); }
+        else {
+          const s = k === 'tension' ? 40 : -40; const a = [250, 30], b = [350, 220]; const L = Math.hypot(100, 190), ux = 100 / L, uy = 190 / L;
+          const draw = (pts, dx, dy) => { x.save(); x.beginPath(); pts.forEach((p, i) => i ? x.lineTo(p[0] + dx, p[1] + dy) : x.moveTo(p[0] + dx, p[1] + dy)); x.closePath(); x.clip(); const cc = ['#ffe0a3', '#c9a37a', '#3e2723', '#bcaaa4', '#8d6e63']; for (let i = 0; i < 5; i++) { x.fillStyle = cc[i]; x.fillRect(-50 + dx, 30 + i * 38 + dy, 700, 38); } x.restore(); };
+          draw([[0, 30], a, b, [0, 220]], 0, 0); draw([a, [600, 30], [600, 220], b], ux * s, uy * s);
+          x.strokeStyle = '#d00'; x.lineWidth = 3; x.beginPath(); x.moveTo(a[0], a[1]); x.lineTo(b[0], b[1]); x.stroke();
+          x.fillStyle = '#000'; x.font = 'bold 13px sans-serif'; x.fillText('Find the dark layer on each side. Which block moved?', 150, 18);
+        }
+        ['Normal fault', 'Reverse fault', 'Strike-slip fault'].forEach(n => { const bt = el('button', { class: 'btn', style: 'margin:6px 6px 0 0' }, n); bt.onclick = () => { if (n === name) { solved++; toast('🕵️ Case solved!'); if (solved >= 4) { box.innerHTML = '<h4>🏅 Master Fault Detective!</h4>You can read faults from the rock layers. Remember: hanging wall DOWN = normal; hanging wall UP = reverse; sideways = strike-slip.'; done(); } else newCase(); } else { bt.classList.add('bad'); bt.style.borderColor = '#ef476f'; toast('Look at the dark layer: is it LOWER or HIGHER in the hanging wall (right block)?'); } }; box.appendChild(bt); });
+      }
+      newCase();
+    }
+  }
+});
+
+/* ---- Mission 4: Mountain Maker ---- */
+SECTIONS['7.4'].missions.push({
+  id: 'm74d', icon: '🏔️', name: 'Mountain Maker', xp: 80,
+  desc: 'Build folded, fault-block and volcanic mountains — then fill in the field table.',
+  goal: '<b>Goal:</b> Build all <b>3 kinds of mountains</b>. Then fill in the mountain table by placing each clue in the right row.',
+  run(body, done) {
+    const Cv = mkCanvas(body, 800, 340), ctx = Cv.ctx;
+    const ctr = el('div', { class: 'ctrls' }); body.appendChild(ctr);
+    const ro = el('div', { class: 'readout' }, '<h4>🏔️ Choose a mountain-building process</h4>'); body.appendChild(ro);
+    const tbl = el('div'); body.appendChild(tbl);
+    const M = {
+      fold: ['🪗 Folding', 'Folded mountains', '<b>FOLDED MOUNTAINS</b> form when rock layers are <b>squeezed together and pushed upward</b>. They usually form at <b>convergent</b> boundaries where continents collide. Example: the <b>Appalachian Mountains</b> formed hundreds of millions of years ago when North America collided with Europe and Africa.'],
+      fault: ['🧱 Faulting', 'Fault-block mountains', '<b>FAULT-BLOCK MOUNTAINS</b> form when <b>tension</b> breaks the lithosphere into many <b>normal faults</b>. Along these faults, pieces of the lithosphere <b>drop down</b> compared with other pieces.'],
+      volc: ['🌋 Volcanism', 'Volcanic mountains', '<b>VOLCANIC MOUNTAINS</b> form when <b>melted rock erupts</b> onto Earth\'s surface. Most major ones are at <b>convergent</b> boundaries — like the <b>Andes</b>, where the Nazca plate subducts under the South American plate. They can also form on the ocean floor and grow into islands like the <b>Hawaiian Islands</b>. Most active volcanoes ring the Pacific: the <b>Ring of Fire</b>.'],
+    };
+    let mode = null, t = 0; const built = {}; let tableOn = false;
+    Object.keys(M).forEach(k => { const b = el('button', { class: 'btn' }, M[k][0]); b.onclick = () => { mode = k; t = 0; ctr.querySelectorAll('.btn').forEach(x => x.classList.remove('on')); b.classList.add('on'); ro.innerHTML = '<h4>Building…</h4>'; }; ctr.appendChild(b); });
+    const cols = ['#5d4037', '#8d6e63', '#bcaaa4', '#e0c097', '#a1887f'];
+    loop(dt => {
+      ctx.clearRect(0, 0, 800, 340); ctx.fillStyle = '#87c5eb'; ctx.fillRect(0, 0, 800, 340);
+      if (mode) { const was = t; t = Math.min(1, t + dt / 4); if (t >= 1 && was < 1) { ro.innerHTML = '<h4>' + M[mode][1] + '</h4>' + M[mode][2]; discover(M[mode][1]); if (mode === 'volc') discover('Ring of Fire'); if (!built[mode]) { built[mode] = 1; toast('🏔️ Built: ' + M[mode][1]); if (Object.keys(built).length === 3) table(); } } }
+      const e = ease(t);
+      if (!mode) { for (let i = 0; i < 5; i++) { ctx.fillStyle = cols[i]; ctx.fillRect(0, 300 - (i + 1) * 30, 800, 30); } txt(ctx, 'Flat rock layers — pick a process ⬇', 400, 80, { c: '#0b1726', size: 18 }); return; }
+      if (mode === 'fold') {
+        const sq = e * 120; for (let i = 0; i < 5; i++) { ctx.beginPath(); const yb = 300 - i * 30; for (let x = sq; x <= 800 - sq; x += 6) ctx.lineTo(x, yb - 30 - e * (60 + 20 * Math.sin((x - 400) / 45)) * Math.exp(-Math.pow((x - 400) / 220, 2))); for (let x = 800 - sq; x >= sq; x -= 6) ctx.lineTo(x, yb - e * (60 + 20 * Math.sin((x - 400) / 45)) * Math.exp(-Math.pow((x - 400) / 220, 2))); ctx.closePath(); ctx.fillStyle = cols[i]; ctx.fill(); }
+        txt(ctx, '➡', sq - 20, 230, { size: 40, c: '#d00' }); txt(ctx, '⬅', 820 - sq, 230, { size: 40, c: '#d00' }); txt(ctx, 'COMPRESSION squeezes layers', 400, 30, { c: '#0b1726' });
+      } else if (mode === 'fault') {
+        const n = 6, w = 800 / n; for (let b = 0; b < n; b++) { const drop = b % 2 ? e * 60 : 0; const x0 = b * w, x1 = x0 + w; for (let i = 0; i < 5; i++) { ctx.fillStyle = cols[i]; ctx.beginPath(); const yt = 300 - (i + 1) * 30 + drop, yb2 = 300 - i * 30 + drop; ctx.moveTo(x0 + (b % 2 ? 15 : -15) * e, yt); ctx.lineTo(x1 - (b % 2 ? 15 : -15) * e, yt); ctx.lineTo(x1 + (b % 2 ? 15 : -15) * e * 0, yb2); ctx.lineTo(x0, yb2); ctx.closePath(); ctx.fill(); } if (b) { ctx.strokeStyle = '#d00'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x0, 140); ctx.lineTo(x0, 330); ctx.stroke(); } }
+        txt(ctx, '⬅', 20, 60, { size: 40, c: '#d00' }); txt(ctx, '➡', 780, 60, { size: 40, c: '#d00' }); txt(ctx, 'TENSION → normal faults → blocks drop', 400, 30, { c: '#0b1726' });
+      } else {
+        for (let i = 0; i < 5; i++) { ctx.fillStyle = cols[i]; ctx.fillRect(0, 300 - (i + 1) * 30, 800, 30); }
+        const h = e * 170; poly(ctx, [[400 - h * 1.3 - 20, 150], [390, 150 - h], [410, 150 - h], [400 + h * 1.3 + 20, 150]], '#4e342e', '#2e1d17');
+        ctx.fillStyle = '#ff6b2b'; ctx.fillRect(394, 150 - h, 12, 190 + h);
+        for (let i = 0; i < 10; i++) { const a = (performance.now() / 700 + i / 10) % 1; ctx.beginPath(); ctx.arc(400 + Math.sin(i * 5) * 40 * a, 150 - h - a * 70, 6 * (1 - a) + 2, 0, 7); ctx.fillStyle = i % 2 ? '#ff6b2b' : '#ffd166'; ctx.fill(); }
+        txt(ctx, 'MELTED ROCK ERUPTS and builds up layer by layer', 400, 320, { c: '#fff', stroke: '#000' });
+      }
+    });
+    function table() {
+      if (tableOn) return; tableOn = true;
+      const clues = [['Rock layers squeezed together and pushed upward', 'F'], ['Usually form where continents collide', 'F'], ['Example: Appalachian Mountains', 'F'], ['Tension breaks the lithosphere into many normal faults', 'B'], ['Pieces of lithosphere drop down compared with others', 'B'], ['Melted rock erupts onto Earth\'s surface', 'V'], ['Examples: Andes, Hawaiian Islands', 'V'], ['Can form on land OR the ocean floor', 'V'], ['Most major ones are at convergent boundaries', 'V']];
+      const box = el('div', { class: 'check' }, '<h4>📋 Field table — click a clue, then click its row</h4>'); tbl.appendChild(box);
+      const pool = el('div'); box.appendChild(pool); const bins = el('div', { class: 'bins', style: 'margin-top:8px' }); box.appendChild(bins);
+      const B = { F: el('div', { class: 'bin' }, '<h4>🪗 Folded</h4>'), B: el('div', { class: 'bin' }, '<h4>🧱 Fault-block</h4>'), V: el('div', { class: 'bin' }, '<h4>🌋 Volcanic</h4>') };
+      let sel = null, left = clues.length; Object.values(B).forEach(b => bins.appendChild(b));
+      shuffle(clues).forEach(c => { const ch = el('span', { class: 'chip' }, c[0]); ch.onclick = () => { pool.querySelectorAll('.chip').forEach(x => x.classList.remove('sel')); ch.classList.add('sel'); sel = { c, ch }; }; pool.appendChild(ch); });
+      Object.keys(B).forEach(k => B[k].onclick = () => { if (!sel) return; if (sel.c[1] === k) { sel.ch.classList.remove('sel'); sel.ch.classList.add('ok'); sel.ch.onclick = null; B[k].appendChild(sel.ch); sel = null; left--; if (!left) fin(); } else { const c = sel.ch; c.classList.add('bad'); setTimeout(() => c.classList.remove('bad'), 400); } });
+      function fin() { checkpoint(tbl, 'Discovery Check', [
+        { q: 'Why does it take a very long time for most mountains to form?', a: ['Plates move only a few centimeters per year', 'Rocks are too soft', 'Volcanoes rarely erupt', 'There is not enough water'], c: 0, e: 'Stress builds slowly as plates grind over very long periods of time.' },
+        { q: 'What kind of stress forms fault-block mountains?', a: ['Tension', 'Compression', 'Shear stress', 'None'], c: 0, e: 'Tension → normal faults → blocks drop.' },
+        { q: 'What kind of convergent boundary formed the Andes?', a: ['Continent–ocean (Nazca plate subducting under South American plate)', 'Continent–continent', 'Ocean–ocean', 'It\'s a transform boundary'], c: 0, e: 'Oceanic Nazca plate subducts beneath continental South America.' },
+        { q: 'Where are most of Earth\'s active volcanoes?', a: ['Around the edge of the Pacific Ocean — the Ring of Fire', 'In the middle of Africa', 'At the North Pole', 'Along the Appalachians'], c: 0, e: 'The Ring of Fire circles the Pacific.' },
+      ], done); }
+    }
+  }
+});
+
+/* ---- Mission 5: Uplift & Subsidence ---- */
+SECTIONS['7.4'].missions.push({
+  id: 'm74e', icon: '🧊', name: 'Glacier & Ridge Elevator', xp: 70,
+  desc: 'Pile on a glacier to sink the crust, melt it to watch rebound, and cool sea floor.',
+  goal: '<b>Goal:</b> Grow a big glacier to cause <b>subsidence</b>, then melt it to see <b>rebound</b> (uplift). Then switch to the <b>Mid-ocean ridge</b> view to see how temperature moves crust up and down.',
+  run(body, done) {
+    const Cv = mkCanvas(body, 800, 340), ctx = Cv.ctx;
+    const ctr = el('div', { class: 'ctrls' }); body.appendChild(ctr);
+    const bG = el('button', { class: 'btn on' }, '🧊 Glacier view'), bR = el('button', { class: 'btn' }, '🔥 Mid-ocean ridge view'); ctr.append(bG, bR);
+    const sl = el('div', { class: 'ctrls' }, '<b>Ice thickness:</b>'); const ice = el('input', { type: 'range', min: 0, max: 100, value: 0, class: 'slider', style: 'flex:1' }); sl.appendChild(ice); body.appendChild(sl);
+    const ro = el('div', { class: 'readout' }); body.appendChild(ro);
+    let view = 'g', crust = 0, sawSub = false, sawReb = false, sawRidge = false, unlocked = false, T = 0;
+    bG.onclick = () => { view = 'g'; bG.classList.add('on'); bR.classList.remove('on'); sl.style.display = ''; };
+    bR.onclick = () => { view = 'r'; bR.classList.add('on'); bG.classList.remove('on'); sl.style.display = 'none'; if (!sawRidge) { sawRidge = true; discover('Uplift'); toast('🔥 Ridge view logged'); chk(); } };
+    const pts = Array.from({ length: 40 }, (_, i) => ({ x: Math.random() * 380, s: i % 2 ? 1 : -1 }));
+    function status() { ro.innerHTML = `<h4>📏 Elevation monitor</h4>${view === 'g' ? `Ice: <b>${ice.value}%</b> · Crust height change: <b style="color:${crust < -2 ? '#ef476f' : '#06d6a0'}">${crust.toFixed(0)} m (model units)</b><br>${crust < -20 && +ice.value > 50 ? '⬇ <b>SUBSIDENCE</b>: the glacier\'s weight pushes the crust down.' : sawSub && +ice.value < 20 ? '⬆ <b>REBOUND</b>: the weight is gone, so the crust slowly rises back to its original elevation.' : 'Change the ice thickness.'}` : 'Crust at the ridge is <b>HOT → less dense → high</b> (heating & uplift). As it moves away it <b>COOLS → denser → sinks</b> (cooling & subsidence). Old, cold crust far from the ridge is lower than young, hot crust.'}<br><span class="mono">Subsidence ${sawSub ? '✅' : '⬜'} · Rebound ${sawReb ? '✅' : '⬜'} · Ridge ${sawRidge ? '✅' : '⬜'}</span>`; }
+    function chk() { if (sawSub && sawReb && sawRidge && !unlocked) { unlocked = true; checkpoint(body, 'Discovery Check', [
+      { q: 'In the glacier experiment, what force caused the crust to subside?', a: ['The weight of the glacier', 'Heat from the mantle', 'Tension', 'Shear stress'], c: 0, e: 'Heavy ice pushes the crust down → subsidence.' },
+      { q: 'What is rebound?', a: ['The crust slowly rising back to its original elevation after the weight is removed', 'The glacier growing back', 'A type of fold', 'An earthquake'], c: 0, e: 'Melted glacier → less weight → crust rises.', term: 'Rebound' },
+      { q: 'Why does ocean crust far from a mid-ocean ridge subside?', a: ['It cools, becomes denser, and sinks', 'It heats up and rises', 'Glaciers push it down', 'It turns into continental crust'], c: 0, e: 'Hot rock is less dense than cold rock of the same composition.' },
+      { q: 'Fault-block mountains show a third cause of subsidence. In a ______, tension stretches the crust and it sinks along normal faults.', a: ['Rift zone at a divergent boundary', 'Subduction zone', 'Ring of Fire', 'Island arc'], c: 0, e: 'A rift zone is a set of deep cracks at a divergent boundary.', term: 'Rift zone' },
+      { q: 'Which is TRUE about rocks that subside?', a: ['Unlike some uplifted rocks, they do not deform', 'They always fold', 'They always break', 'They melt'], c: 0, e: 'Uplifted rocks may or may not deform; subsiding rocks do not.' },
+    ], done); } }
+    loop(dt => {
+      T += dt; ctx.clearRect(0, 0, 800, 340);
+      if (view === 'g') {
+        const target = -(+ice.value) * .8; crust += (target - crust) * dt * .8;
+        if (crust < -50) { if (!sawSub) { sawSub = true; discover('Subsidence'); toast('⬇ Subsidence observed!'); } }
+        if (sawSub && +ice.value < 15 && crust > -12 && !sawReb) { sawReb = true; discover('Rebound'); toast('⬆ Rebound observed!'); chk(); }
+        ctx.fillStyle = '#87c5eb'; ctx.fillRect(0, 0, 800, 340);
+        const top = x => 170 - crust * Math.exp(-Math.pow((x - 400) / 220, 2));
+        ctx.fillStyle = '#c0703a'; ctx.fillRect(0, 230, 800, 110); txt(ctx, 'MANTLE', 60, 320, { c: '#ffe0cc', size: 13 });
+        ctx.beginPath(); for (let x = 0; x <= 800; x += 10) ctx.lineTo(x, top(x)); for (let x = 800; x >= 0; x -= 10) ctx.lineTo(x, top(x) + 75); ctx.closePath(); ctx.fillStyle = '#8a7a5a'; ctx.fill(); txt(ctx, 'CRUST', 700, top(700) + 37, { size: 13 });
+        const ih = +ice.value * 1.4; if (ih > 1) { ctx.beginPath(); ctx.moveTo(180, top(180)); for (let x = 180; x <= 620; x += 10) ctx.lineTo(x, top(x) - ih * Math.sin((x - 180) / 440 * Math.PI)); ctx.lineTo(620, top(620)); ctx.closePath(); ctx.fillStyle = '#e3f6ff'; ctx.fill(); ctx.strokeStyle = '#9fd3ff'; ctx.stroke(); txt(ctx, 'GLACIER', 400, top(400) - ih / 2, { c: '#2a6f97' }); if (ih > 40) txt(ctx, '⬇ weight', 400, top(400) - ih / 2 + 22, { c: '#d00', size: 13 }); }
+        ctx.setLineDash([6, 6]); ctx.strokeStyle = '#fff'; ctx.beginPath(); ctx.moveTo(0, 170); ctx.lineTo(800, 170); ctx.stroke(); ctx.setLineDash([]); txt(ctx, 'original elevation', 90, 160, { size: 11, c: '#0b1726' });
+      } else {
+        ctx.fillStyle = '#1e6fa8'; ctx.fillRect(0, 0, 800, 340); ctx.fillStyle = '#c0703a'; ctx.fillRect(0, 250, 800, 90);
+        const top = x => 120 + 90 * Math.min(1, Math.abs(x - 400) / 380) ** .6;
+        ctx.beginPath(); for (let x = 0; x <= 800; x += 8) ctx.lineTo(x, top(x)); ctx.lineTo(800, 250); ctx.lineTo(0, 250); ctx.closePath();
+        const g = ctx.createLinearGradient(0, 0, 800, 0); g.addColorStop(0, '#2b4f7a'); g.addColorStop(.5, '#d9622b'); g.addColorStop(1, '#2b4f7a'); ctx.fillStyle = g; ctx.fill();
+        pts.forEach(p => { p.x += dt * 30; if (p.x > 380) p.x = 0; const x = 400 + p.s * p.x; ctx.beginPath(); ctx.arc(x, top(x) + 15, 4, 0, 7); const h = 1 - p.x / 380; ctx.fillStyle = `rgb(${120 + 135 * h},${120},${255 - 200 * h})`; ctx.fill(); });
+        txt(ctx, 'Heating & UPLIFT ⬆', 400, 90, { stroke: '#000' }); txt(ctx, '⬇ Cooling & SUBSIDENCE', 120, 180, { stroke: '#000' }); txt(ctx, 'Cooling & SUBSIDENCE ⬇', 680, 180, { stroke: '#000' }); txt(ctx, 'MID-OCEAN RIDGE', 400, 60, { c: '#ffb703' });
+      }
+      if (Math.floor(T * 4) !== Math.floor((T - dt) * 4)) status();
+    });
+  }
+});
+/* ================= START ================= */
+drawHUD(); showSection('7.1');
+if (!S.xp) setTimeout(() => toast('👋 Welcome to Terra Lab, scientist! Start with Mission 1. Your progress saves automatically.', 5000), 600);
+</script>
+</body>
+</html>
